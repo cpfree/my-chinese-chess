@@ -1,4 +1,4 @@
-package cn.cpf.app.chess.bean;
+package cn.cpf.app.chess.res;
 
 public enum Part {
 	/**
