@@ -17,8 +17,11 @@ public class ChessPiece extends JPiece {
 
     public final Role role;
 
+    public final Piece piece;
+
     public ChessPiece(Piece piece, Place place) {
         super(piece.image, place);
+        this.piece = piece;
         this.part = piece.part;
         this.role = piece.role;
     }

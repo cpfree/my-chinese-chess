@@ -1,7 +1,9 @@
 package cn.cpf.app.chess.domain;
 
+import cn.cpf.app.chess.bean.ChessPiece;
 import cn.cpf.app.chess.bean.StepRecord;
 import cn.cpf.app.chess.main.ChessConfig;
+import cn.cpf.app.chess.res.ChessDefined;
 import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Piece;
 import cn.cpf.app.chess.res.Place;
@@ -9,6 +11,8 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * <b>Description : </b> 当前棋局的形势, 双方都有什么棋子, 在什么位置, 下一步该谁走.
@@ -22,7 +26,7 @@ public class Situation {
      * 当前棋盘
      */
     @Getter
-    private Piece[][] boardPiece;
+    private ChessPiece[][] boardPiece;
 
     /**
      * 下一步行走的势力
@@ -42,19 +46,20 @@ public class Situation {
     @Getter
     public SituationRecord situationRecord;
 
-    public Piece getPiece(@NonNull Place place) {
+    public ChessPiece getPiece(@NonNull Place place) {
         return boardPiece[place.x][place.y];
     }
 
     public Situation() {
-        init(ChessConfig.geneDefaultPieceSituation());
     }
 
-    public void init(Piece[][] pieces) {
-        boardPiece = pieces;
+    public void init(List<ChessPiece> list) {
+        boardPiece = new ChessPiece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
+        list.forEach(it -> boardPiece[it.getPlace().x][it.getPlace().y] = it);
         // 获取先手方配置信息
         nextPart = ChessConfig.firstPart;
         // TODO 计算分数
+        situationRecord = new SituationRecord();
         // scores = new int[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
     }
 
@@ -92,29 +97,30 @@ public class Situation {
 
     /**
      * 真实落子
-     * @param part
-     * @param piece
-     * @param oldPlace
-     * @param newPlace
+     * @param from
+     * @param to
      * @return
      */
-    public void realLocatePiece(Part part, Piece piece, Place oldPlace, Place newPlace){
-        if (piece != boardPiece[oldPlace.x][oldPlace.y]) {
-            throw new RuntimeException();
-        }
+    public void realLocatePiece(Place from, Place to){
+
+        ChessPiece fromPiece = getPiece(from);
+        Objects.requireNonNull(fromPiece);
         // 判断是否是吃子
-        if (boardPiece[newPlace.x][newPlace.y] != null) {
-            System.out.println(piece.name() + " eat " + boardPiece[newPlace.x][newPlace.y].name());
+        ChessPiece eatenPiece = getPiece(to);
+        if (eatenPiece != null) {
+            eatenPiece.hide();
+            System.out.println(fromPiece.role.name() + " eat " + eatenPiece.role.name());
         }
 
         // 走棋
-        boardPiece[oldPlace.x][oldPlace.y] = null;
-        boardPiece[newPlace.x][newPlace.y] = piece;
+        boardPiece[from.x][from.y] = null;
+        boardPiece[to.x][to.y] = fromPiece;
+        fromPiece.setPlace(to);
         // 添加记录
-        situationRecord.addRecord(part, piece, oldPlace, newPlace);
+        situationRecord.addRecord(nextPart, fromPiece.piece, from, to, eatenPiece == null ? null : eatenPiece.piece);
 
         // 势力
-        this.nextPart = Part.getOpposite(part);
+        this.nextPart = Part.getOpposite(this.nextPart);
         // 开额外线程判断是否胜利, 或连将
     }
 //

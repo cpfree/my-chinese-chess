@@ -13,16 +13,16 @@ public interface ChessDefined {
     /**
      * 棋盘X轴范围
      */
-    int RANGE_X = 8;
+    int RANGE_X = 9;
     /**
      * 棋盘Y轴范围
      */
-    int RANGE_Y = 9;
+    int RANGE_Y = 10;
 
     /**
      * 棋盘尺寸
      */
-    Dimension boardRect = new Dimension(530, 606);
+    Dimension boardRect = new Dimension(536, 615);
 
     /**
      * 棋子宽度和高度

@@ -1,7 +1,7 @@
 package cn.cpf.app.chess.base;
 
 /**
- * <b>Description : </b>
+ * <b>Description : </b> 工具类, 减少安全检查, 提升速度
  *
  * @author CPF
  * Date: 2020/3/19 18:10

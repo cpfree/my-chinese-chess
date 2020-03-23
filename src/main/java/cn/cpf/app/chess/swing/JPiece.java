@@ -2,6 +2,7 @@ package cn.cpf.app.chess.swing;
 
 import cn.cpf.app.chess.res.*;
 import lombok.Getter;
+import lombok.NonNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,22 +21,31 @@ public class JPiece {
     @Getter
     private Place place;
 
-    public JPiece(Image image, Place place) {
+    public JPiece(Image image) {
+        jLabel = new JLabel();
+        jLabel.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
+        jLabel.setIcon(new ImageIcon(image));
+        this.hide();
+    }
+
+    public JPiece(Image image, @NonNull Place place) {
+        jLabel = new JLabel();
         jLabel.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
         jLabel.setIcon(new ImageIcon(image));
         this.setPlace(place);
     }
 
-    public void setPlace(int x, int y) {
-        this.place = Place.of(x, y);
+    private void setPlace(int x, int y) {
         jLabel.setLocation(ChessDefined.convertPlaceToLocation(x, y));
     }
 
-    public void setPlace(Place place) {
+    public void hide() {
+        this.setVisible(false);
+        this.setPlace(-1, -1);
+    }
+
+    public void setPlace(@NonNull Place place) {
         this.place = place;
-        if (place == null) {
-            place = Place.Null_Place;
-        }
         this.setPlace(place.x, place.y);
     }
 

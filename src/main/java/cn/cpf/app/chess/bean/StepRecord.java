@@ -17,12 +17,13 @@ import java.util.Date;
 @ToString
 public class StepRecord {
 
-    public StepRecord(Part part, int step, Piece piece, Place oldPlace, Place newPlace) {
+    public StepRecord(Part part, int step, Piece piece, Place oldPlace, Place newPlace, Piece eatenPiece) {
         this.part = part;
         this.step = step;
         this.piece = piece;
         this.oldPlace = oldPlace;
         this.newPlace = newPlace;
+        this.eatenPiece = eatenPiece;
         this.date = new Date();
     }
 
@@ -47,5 +48,6 @@ public class StepRecord {
     private final Place newPlace;
     @Getter
     private final Date date;
-
+    @Getter
+    private final Piece eatenPiece;
 }

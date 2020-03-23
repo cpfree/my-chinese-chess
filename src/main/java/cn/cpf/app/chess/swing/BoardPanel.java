@@ -2,6 +2,7 @@ package cn.cpf.app.chess.swing;
 
 import cn.cpf.app.chess.bean.ChessPiece;
 import cn.cpf.app.chess.domain.Situation;
+import cn.cpf.app.chess.main.ChessConfig;
 import cn.cpf.app.chess.res.*;
 import com.sun.istack.internal.Nullable;
 import lombok.NonNull;
@@ -19,24 +20,16 @@ public class BoardPanel extends JPanel {
      * 棋局形势
      */
     private Situation situation;
-    /**
-     * 活着的棋子
-     */
-    private ChessPiece[][] chessPieces = null;
-    /**
-     * 被吃的棋子
-     */
-    private List<ChessPiece> deadPieces = null;
 
     private ChessPiece curFromPiece;
 
     private MarkHandle markHandle;
 
     private class MarkHandle {
-        JPiece lastMarkFrom = new JPiece(ChessImage.Pointer.getImage(), null);
-        JPiece lastMarkTo = new JPiece(ChessImage.Pointer.getImage(), null);
-        JPiece MarkFrom = new JPiece(ChessImage.Pointer.getImage(), null);
-        JPiece curMark = new JPiece(ChessImage.Pointer.getImage(), null);
+        JPiece lastMarkFrom = new JPiece(ChessImage.Pointer.getImage());
+        JPiece lastMarkTo = new JPiece(ChessImage.Pointer.getImage());
+        JPiece MarkFrom = new JPiece(ChessImage.Pointer.getImage());
+        JPiece curMark = new JPiece(ChessImage.Pointer.getImage());
 
         void endedStep(Place place) {
             markHandle.lastMarkFrom.setPlaceAndShow(markHandle.MarkFrom.getPlace());
@@ -68,43 +61,48 @@ public class BoardPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 // 位置
-                Place place = ChessDefined.convertLocationToPlace(e.getPoint());
-                if (place.equals(curFromPiece.getPlace())) {
-                    return;
-                }
+                Place pointerPlace = ChessDefined.convertLocationToPlace(e.getPoint());
                 // 当前方
-                @NonNull Part part = situation.getNextPart();
+                @NonNull Part pointerPart = situation.getNextPart();
 
-                @Nullable Piece piece = situation.getPiece(place);
+                @Nullable ChessPiece pointerPiece = situation.getPiece(pointerPlace);
 
                 // 通过当前方和当前位置判断是否可以走棋
                 // step: form
                 if (curFromPiece == null) {
                     // 当前焦点位置有棋子且是本方棋子
-                    if (piece != null && piece.part == part) {
+                    if (pointerPart != null && pointerPiece.part == pointerPart) {
                         // 本方棋子, 同时是from指向
-                        markHandle.MarkFrom.setPlaceAndShow(place);
+                        curFromPiece = situation.getPiece(pointerPlace);
+                        markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
                     }
                 } else {
+                    if (pointerPlace.equals(curFromPiece.getPlace())) {
+                        System.out.println("from == to");
+                        return;
+                    }
+                    if (pointerPiece != null && curFromPiece.part == pointerPart) {
+                        // 更新 curFromPiece
+                        curFromPiece = pointerPiece;
+                        markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
+                        System.out.println("更新 curFromPiece");
+                    }
                     // 如果不符合规则则直接返回
-                    if (!piece.role.getRule().check(situation.getBoardPiece(), part, curFromPiece.getPlace(), place)) {
+                    if (!curFromPiece.role.getRule().check(situation.getBoardPiece(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
+                        // 如果当前指向棋子是本方棋子
+                        System.out.println("不符合走棋规则");
                         return;
                     }
                     // 当前棋子无棋子或者为对方棋子
-                    if (piece == null || piece.part != part) {
+                    if (pointerPiece == null || pointerPiece.part != pointerPart) {
                         setEnabled(false);
                         // 数据落子
                         Place form = curFromPiece.getPlace();
-                        situation.realLocatePiece(part, piece, form, place);
-                        // GUI 落子
-                        curFromPiece.setPlace(place);
-                        if (piece != null) {
-                            ChessPiece chessPiece = chessPieces[place.x][place.y];
-                            chessPiece.setVisible(false);
-                            BoardPanel.this.remove(chessPiece.getJLabel());
-                        }
+                        situation.realLocatePiece(form, pointerPlace);
+                        // 更新标记
+                        curFromPiece = null;
                         // 更改标记
-                        markHandle.endedStep(place);
+                        markHandle.endedStep(pointerPlace);
                         setEnabled(true);
                     }
                 }
@@ -134,19 +132,20 @@ public class BoardPanel extends JPanel {
     private void init() {
         // 移除所有
         this.removeAll();
-        markHandle = new MarkHandle();
+        // 获取棋子
+        List<ChessPiece> list = ChessConfig.geneDefaultPieceSituation();
 
+        // 初始化棋盘
         situation = new Situation();
-        chessPieces = new ChessPiece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
-        Piece[][] boardPiece = situation.getBoardPiece();
-        for (int x = boardPiece.length - 1; x >= 0; x--) {
-            for (int y = boardPiece[x].length - 1; y >= 0; y--) {
-                Piece piece = boardPiece[x][y];
-                ChessPiece comp = new ChessPiece(piece, Place.of(x, y));
-                chessPieces[x][y] = comp;
-                this.add(comp.getJLabel());
-            }
-        }
+        situation.init(list);
+        list.forEach(it -> add(it.getJLabel()));
+
+        // 初始化标记符
+        markHandle = new MarkHandle();
+        add(markHandle.curMark.getJLabel());
+        add(markHandle.MarkFrom.getJLabel());
+        add(markHandle.lastMarkFrom.getJLabel());
+        add(markHandle.lastMarkTo.getJLabel());
     }
 
     public void paintComponent(Graphics g) {
@@ -160,6 +159,6 @@ public class BoardPanel extends JPanel {
         int y = (fHeight - imgHeight) / 2;
         // 520 576 514 567
         System.out.println(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
-        g.drawImage(img, x, y, null);
+        g.drawImage(img, 0, 0, null);
     }
 }

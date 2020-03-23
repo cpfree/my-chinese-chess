@@ -33,13 +33,13 @@ public class SituationRecord {
     @Getter
     private int redStep;
 
-    void addRecord(@NonNull Part part, @NonNull Piece piece, @NonNull Place from, @NonNull Place to) {
+    void addRecord(@NonNull Part part, @NonNull Piece piece, @NonNull Place from, @NonNull Place to, Piece eatenPiece) {
         if (Part.RED == part) {
             redStep++;
         } else {
             blackStep++;
         }
-        list.add(new StepRecord(part, list.size() + 1, piece, from, to));
+        list.add(new StepRecord(part, list.size() + 1, piece, from, to, eatenPiece));
     }
 
     int getTotalStep() {

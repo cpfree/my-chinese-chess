@@ -1,8 +1,12 @@
 package cn.cpf.app.chess.main;
 
-import cn.cpf.app.chess.res.ChessDefined;
+import cn.cpf.app.chess.bean.ChessPiece;
 import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Piece;
+import cn.cpf.app.chess.res.Place;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <b>Description : </b>
@@ -14,46 +18,46 @@ public class ChessConfig {
 
     public static final Part firstPart = Part.RED;
 
-    public static Piece[][] geneDefaultPieceSituation() {
-        Piece[][] boardPiece = new Piece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
-                // 添加红色棋子
-        boardPiece[0][9] = Piece.RedCar;
-        boardPiece[1][9] = Piece.RedHorse;
-        boardPiece[2][9] = Piece.RedElephant;
-        boardPiece[3][9] = Piece.RedCounselor;
-        boardPiece[4][9] = Piece.RedBoss;
-        boardPiece[5][9] = Piece.RedCounselor;
-        boardPiece[6][9] = Piece.RedElephant;
-        boardPiece[7][9] = Piece.RedHorse;
-        boardPiece[8][9] = Piece.RedCar;
+    public static List<ChessPiece> geneDefaultPieceSituation() {
+        List<ChessPiece> list = new ArrayList<>(32);
+        // 添加红色棋子
+        list.add(new ChessPiece(Piece.RedCar, Place.of(0, 9)));
+        list.add(new ChessPiece(Piece.RedHorse, Place.of(1, 9)));
+        list.add(new ChessPiece(Piece.RedElephant, Place.of(2, 9)));
+        list.add(new ChessPiece(Piece.RedCounselor, Place.of(3, 9)));
+        list.add(new ChessPiece(Piece.RedBoss, Place.of(4, 9)));
+        list.add(new ChessPiece(Piece.RedCounselor, Place.of(5, 9)));
+        list.add(new ChessPiece(Piece.RedElephant, Place.of(6, 9)));
+        list.add(new ChessPiece(Piece.RedHorse, Place.of(7, 9)));
+        list.add(new ChessPiece(Piece.RedCar, Place.of(8, 9)));
 
-        boardPiece[1][7] = Piece.RedCannon;
-        boardPiece[7][7] = Piece.RedCannon;
-        boardPiece[0][6] = Piece.RedSoldier;
-        boardPiece[2][6] = Piece.RedSoldier;
-        boardPiece[4][6] = Piece.RedSoldier;
-        boardPiece[6][6] = Piece.RedSoldier;
-        boardPiece[8][6] = Piece.RedSoldier;
+        list.add(new ChessPiece(Piece.RedCannon, Place.of(1, 7)));
+        list.add(new ChessPiece(Piece.RedCannon, Place.of(7, 7)));
+        list.add(new ChessPiece(Piece.RedSoldier, Place.of(0, 6)));
+        list.add(new ChessPiece(Piece.RedSoldier, Place.of(2, 6)));
+        list.add(new ChessPiece(Piece.RedSoldier, Place.of(4, 6)));
+        list.add(new ChessPiece(Piece.RedSoldier, Place.of(6, 6)));
+        list.add(new ChessPiece(Piece.RedSoldier, Place.of(8, 6)));
 
         // 添加黑色棋子
-        boardPiece[0][0] = Piece.BlackCar;
-        boardPiece[1][0] = Piece.BlackHorse;
-        boardPiece[2][0] = Piece.BlackElephant;
-        boardPiece[3][0] = Piece.BlackCounselor;
-        boardPiece[4][0] = Piece.BlackBoss;
-        boardPiece[5][0] = Piece.BlackCounselor;
-        boardPiece[6][0] = Piece.BlackElephant;
-        boardPiece[7][0] = Piece.BlackHorse;
-        boardPiece[8][0] = Piece.BlackCar;
+        list.add(new ChessPiece(Piece.BlackCar, Place.of(0, 0)));
+        list.add(new ChessPiece(Piece.BlackHorse, Place.of(1, 0)));
+        list.add(new ChessPiece(Piece.BlackElephant, Place.of(2, 0)));
+        list.add(new ChessPiece(Piece.BlackCounselor, Place.of(3, 0)));
+        list.add(new ChessPiece(Piece.BlackBoss, Place.of(4, 0)));
+        list.add(new ChessPiece(Piece.BlackCounselor, Place.of(5, 0)));
+        list.add(new ChessPiece(Piece.BlackElephant, Place.of(6, 0)));
+        list.add(new ChessPiece(Piece.BlackHorse, Place.of(7, 0)));
+        list.add(new ChessPiece(Piece.BlackCar, Place.of(8, 0)));
 
-        boardPiece[1][2] = Piece.BlackCannon;
-        boardPiece[7][2] = Piece.BlackCannon;
-        boardPiece[0][3] = Piece.BlackSoldier;
-        boardPiece[2][3] = Piece.BlackSoldier;
-        boardPiece[4][3] = Piece.BlackSoldier;
-        boardPiece[6][3] = Piece.BlackSoldier;
-        boardPiece[8][3] = Piece.BlackSoldier;
-        return boardPiece;
+        list.add(new ChessPiece(Piece.BlackCannon, Place.of(1, 2)));
+        list.add(new ChessPiece(Piece.BlackCannon, Place.of(7, 2)));
+        list.add(new ChessPiece(Piece.BlackSoldier, Place.of(0, 3)));
+        list.add(new ChessPiece(Piece.BlackSoldier, Place.of(2, 3)));
+        list.add(new ChessPiece(Piece.BlackSoldier, Place.of(4, 3)));
+        list.add(new ChessPiece(Piece.BlackSoldier, Place.of(6, 3)));
+        list.add(new ChessPiece(Piece.BlackSoldier, Place.of(8, 3)));
+        return list;
     }
 
 }
