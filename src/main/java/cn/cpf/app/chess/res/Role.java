@@ -80,6 +80,11 @@ public enum Role {
             }
             return list;
         }
+
+        @Override
+        public int getScore(ChessPiece[][] chessPieces, Place place) {
+            return 100;
+        }
     }),
     Counselor(new Rule() {
         @Override
@@ -127,6 +132,12 @@ public enum Role {
             }
             return list;
         }
+
+        @Override
+        public int getScore(ChessPiece[][] chessPieces, Place place) {
+            return 100;
+        }
+
     }), elephant(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
@@ -204,11 +215,11 @@ public enum Role {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             // 直走且道路畅通
-            if (to.x == from.x && to.y != from.y && ArrayUtils.numberInMiddle(pieces[from.x], to.y, from.y) == 0) {
-                return true;
+            if (to.x == from.x && to.y != from.y) {
+                return ArrayUtils.nullInMiddle(pieces[from.x], to.y, from.y);
             }
-            if (to.x != from.x && to.y == from.y && ArrayUtils.numberInMiddle(pieces, to.x, to.y, from.y) == 0) {
-                return true;
+            if (to.x != from.x && to.y == from.y) {
+                return ArrayUtils.nullInMiddle(pieces, to.y, to.x, from.x);
             }
             return false;
         }
@@ -272,18 +283,18 @@ public enum Role {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             if (pieces[to.x][to.y] == null) {
-                if (to.x == from.x && to.y != from.y && ArrayUtils.numberInMiddle(pieces[from.x], to.y, from.y) == 0) {
-                    return true;
+                if (to.x == from.x && to.y != from.y) {
+                    return ArrayUtils.nullInMiddle(pieces[from.x], to.y, from.y);
                 }
-                if (to.x != from.x && to.y == from.y && ArrayUtils.numberInMiddle(pieces, to.x, to.y, from.y) == 0) {
-                    return true;
+                if (to.x != from.x && to.y == from.y) {
+                    return ArrayUtils.nullInMiddle(pieces, to.y, to.x, from.x);
                 }
             } else {
-                if (to.x == from.x && to.y != from.y && ArrayUtils.numberInMiddle(pieces[from.x], to.y, from.y) == 1) {
-                    return true;
+                if (to.x == from.x && to.y != from.y) {
+                    return ArrayUtils.oneInMiddle(pieces[from.x], to.y, from.y);
                 }
-                if (to.x != from.x && to.y == from.y && ArrayUtils.numberInMiddle(pieces, to.x, to.y, from.y) == 1) {
-                    return true;
+                if (to.x != from.x && to.y == from.y) {
+                    return ArrayUtils.oneInMiddle(pieces, to.y, to.x, from.x);
                 }
             }
             return false;
@@ -383,11 +394,11 @@ public enum Role {
             int xSub = to.x - from.x;
             int ySub = to.y - from.y;
             // 为日字, 且道路通畅
-            if ((Math.abs(xSub) == 2 && Math.abs(ySub) == 1) || pieces[from.x + (xSub / 2)][from.y] == null) {
-                return true;
+            if ((Math.abs(xSub) == 2 && Math.abs(ySub) == 1)) {
+                return pieces[from.x + (xSub / 2)][from.y] == null;
             }
-            if ((Math.abs(ySub) == 2 && Math.abs(xSub) == 1) || pieces[from.x][from.y + (ySub / 2)] == null) {
-                return true;
+            if ((Math.abs(ySub) == 2 && Math.abs(xSub) == 1)) {
+                return pieces[from.x][from.y + (ySub / 2)] == null;
             }
             return false;
         }
@@ -497,7 +508,7 @@ public enum Role {
     });
 
     @Getter
-    private Rule rule;
+    private final Rule rule;
 
     Role(Rule rule) {
         this.rule = rule;

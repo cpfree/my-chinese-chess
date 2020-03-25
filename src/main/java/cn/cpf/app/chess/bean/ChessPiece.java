@@ -26,4 +26,10 @@ public class ChessPiece extends JPiece {
         this.role = piece.role;
     }
 
+    public int status;
+
+    public int getScore() {
+        return 0;
+    }
+
 }

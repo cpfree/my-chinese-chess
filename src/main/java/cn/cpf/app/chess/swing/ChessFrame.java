@@ -33,6 +33,7 @@ public class ChessFrame extends JFrame {
 		setTitle("my chess");
 		setVisible(true);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		setResizable(false);
 		setBounds(400, 100, ChessDefined.boardRect.width, ChessDefined.boardRect.height);
 		contentPane = new ChessPanel();
 		contentPane.setVisible(true);

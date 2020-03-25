@@ -8,6 +8,85 @@ package cn.cpf.app.chess.base;
  */
 public class ArrayUtils {
 
+    public static boolean nullInMiddle(Object[] arr, int from, int to) {
+        int min, max;
+        if (from > to) {
+            min = to;
+            max = from;
+        } else {
+            min = from;
+            max = to;
+        }
+        for (min++; min < max; min++) {
+            if (arr[min] != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean oneInMiddle(Object[] arr, int from, int to) {
+        int min, max;
+        if (from > to) {
+            min = to;
+            max = from;
+        } else {
+            min = from;
+            max = to;
+        }
+        boolean one = false;
+        for (min++; min < max; min++) {
+            if (arr[min] != null) {
+                if (one) {
+                    return false;
+                } else {
+                    one = true;
+                }
+            }
+        }
+        return one;
+    }
+
+    public static boolean nullInMiddle(Object[][] arr, int y, int from, int to) {
+        int min, max;
+        if (from > to) {
+            min = to;
+            max = from;
+        } else {
+            min = from;
+            max = to;
+        }
+        for (min++; min < max; min++) {
+            if (arr[min][y] != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean oneInMiddle(Object[][] arr, int y, int from, int to) {
+        int min, max;
+        if (from > to) {
+            min = to;
+            max = from;
+        } else {
+            min = from;
+            max = to;
+        }
+        boolean one = false;
+        for (min++; min < max; min++) {
+            if (arr[min][y] != null) {
+                if (one) {
+                    return false;
+                } else {
+                    one = true;
+                }
+            }
+        }
+        return one;
+    }
+
+
     public static int numberInMiddle(Object[] arr, int from, int to) {
         int min, max;
         if (from > to) {
@@ -24,7 +103,7 @@ public class ArrayUtils {
         return num;
     }
 
-    public static int numberInMiddle(Object[][] arr, int x, int from, int to) {
+    public static int numberInMiddle(Object[][] arr, int y, int from, int to) {
         int min, max;
         if (from > to) {
             min = to;
@@ -35,7 +114,7 @@ public class ArrayUtils {
         }
         int num = 0;
         for (min++; min < max; min++) {
-            if (arr[min][x] != null) num++;
+            if (arr[min][y] != null) num++;
         }
         return num;
     }

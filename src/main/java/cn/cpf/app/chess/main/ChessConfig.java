@@ -18,6 +18,9 @@ public class ChessConfig {
 
     public static final Part firstPart = Part.RED;
 
+    public static final int deep = 4;
+
+
     public static List<ChessPiece> geneDefaultPieceSituation() {
         List<ChessPiece> list = new ArrayList<>(32);
         // 添加红色棋子

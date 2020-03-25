@@ -1,16 +1,14 @@
 package cn.cpf.app.chess.domain;
 
+import cn.cpf.app.chess.base.ArrayUtils;
 import cn.cpf.app.chess.bean.ChessPiece;
-import cn.cpf.app.chess.bean.StepRecord;
 import cn.cpf.app.chess.main.ChessConfig;
 import cn.cpf.app.chess.res.ChessDefined;
 import cn.cpf.app.chess.res.Part;
-import cn.cpf.app.chess.res.Piece;
 import cn.cpf.app.chess.res.Place;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -35,10 +33,10 @@ public class Situation {
     private Part nextPart;
 
     /**
-     * 当前棋局定点分数, 可以根据棋盘上的棋子和下一步行走方计算
+     * 区域, [][][] 红色区域, 蓝色区域, 汇总区域.
      */
     @Getter
-    public int[][] scores;
+    public int[][][] scores;
 
     /**
      * 下棋记录
@@ -53,6 +51,21 @@ public class Situation {
     public Situation() {
     }
 
+    private ChessPiece redBoss;
+    private ChessPiece blackBoss;
+
+    /**
+     * @return boss 是否为面对面
+     */
+    public boolean faceToFace(Part part, Place nextPlace) {
+        Place redBossPlace = redBoss.getPlace();
+        Place blackBossPlace = blackBoss.getPlace();
+        if (redBossPlace.x != blackBossPlace.x) {
+            return false;
+        }
+        return ArrayUtils.nullInMiddle(boardPiece[redBossPlace.x], redBossPlace.y, redBossPlace.y);
+    }
+
     public void init(List<ChessPiece> list) {
         boardPiece = new ChessPiece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
         list.forEach(it -> boardPiece[it.getPlace().x][it.getPlace().y] = it);
@@ -62,8 +75,6 @@ public class Situation {
         situationRecord = new SituationRecord();
         // scores = new int[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
     }
-
-
 
 //
 //    /**

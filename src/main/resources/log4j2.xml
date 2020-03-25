@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration>
+    <!-- 输出日志到控制台  ConsoleAppender -->
+    <Properties>
+        <!--申明全局别名，下面可以直接使用-->
+        <Property name="APP_Name">ity-institution</Property>
+    </Properties>
+
+    <Appenders>
+        <!--这个输出控制台的配置，这里输出除了warn和error级别的信息到System.out -->
+        <Console name="console_out_appender" target="SYSTEM_OUT">
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" />
+            <!-- 输出日志的格式 -->
+            <PatternLayout pattern="[%p] [chess] %d{yyyy-MM-dd HH:mm:ss} (%F:%L) %m%n" />
+        </Console>
+    </Appenders>
+
+    <!-- 控制某包下面的日志输出级别，只有大于等于这个级别才会输出 -->
+    <Loggers>
+        <Logger name="java.sql" level="DEBUG"/>
+        <Logger name="org.springframework" level="WARN"/>
+        <Logger name="org.apache.velocity" level="WARN"/>
+        <Logger name="org.apache.http" level="WARN"/>
+        <Logger name="net.sf" level="WARN"/>
+        <Logger name="org.apache.commons" level="WARN"/>
+        <Logger name="org.apache.struts" level="WARN"/>
+        <Logger name="org.mybatis.spring" level="DEBUG"/>
+        <Logger name="cn.cpf" level="DEBUG"/>
+
+        <Root level="DEBUG">
+            <AppenderRef ref="console_out_appender" />
+        </Root>
+    </Loggers>
+
+</Configuration>

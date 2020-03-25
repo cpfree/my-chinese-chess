@@ -2,10 +2,12 @@ package cn.cpf.app.chess.swing;
 
 import cn.cpf.app.chess.bean.ChessPiece;
 import cn.cpf.app.chess.domain.Situation;
+import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.main.ChessConfig;
 import cn.cpf.app.chess.res.*;
 import com.sun.istack.internal.Nullable;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
 
+@Slf4j
 public class BoardPanel extends JPanel {
 
     /**
@@ -57,72 +60,57 @@ public class BoardPanel extends JPanel {
      * 添加棋盘监听器
      */
     private void addPanelListener() {
-        addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // 位置
-                Place pointerPlace = ChessDefined.convertLocationToPlace(e.getPoint());
-                // 当前方
-                @NonNull Part pointerPart = situation.getNextPart();
+        addMouseListener((LambdaMouseListener) e -> {
+            // 位置
+            Place pointerPlace = ChessDefined.convertLocationToPlace(e.getPoint());
+            // 当前方
+            @NonNull Part pointerPart = situation.getNextPart();
+            // 当前焦点棋子
+            @Nullable ChessPiece pointerPiece = situation.getPiece(pointerPlace);
 
-                @Nullable ChessPiece pointerPiece = situation.getPiece(pointerPlace);
-
-                // 通过当前方和当前位置判断是否可以走棋
-                // step: form
-                if (curFromPiece == null) {
-                    // 当前焦点位置有棋子且是本方棋子
-                    if (pointerPart != null && pointerPiece.part == pointerPart) {
-                        // 本方棋子, 同时是from指向
-                        curFromPiece = situation.getPiece(pointerPlace);
-                        markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
-                    }
-                } else {
-                    if (pointerPlace.equals(curFromPiece.getPlace())) {
-                        System.out.println("from == to");
-                        return;
-                    }
-                    if (pointerPiece != null && curFromPiece.part == pointerPart) {
-                        // 更新 curFromPiece
-                        curFromPiece = pointerPiece;
-                        markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
-                        System.out.println("更新 curFromPiece");
-                    }
-                    // 如果不符合规则则直接返回
-                    if (!curFromPiece.role.getRule().check(situation.getBoardPiece(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
-                        // 如果当前指向棋子是本方棋子
-                        System.out.println("不符合走棋规则");
-                        return;
-                    }
-                    // 当前棋子无棋子或者为对方棋子
-                    if (pointerPiece == null || pointerPiece.part != pointerPart) {
-                        setEnabled(false);
-                        // 数据落子
-                        Place form = curFromPiece.getPlace();
-                        situation.realLocatePiece(form, pointerPlace);
-                        // 更新标记
-                        curFromPiece = null;
-                        // 更改标记
-                        markHandle.endedStep(pointerPlace);
-                        setEnabled(true);
-                    }
+            // 通过当前方和当前位置判断是否可以走棋
+            // step: form
+            if (curFromPiece == null) {
+                // 当前焦点位置有棋子且是本方棋子
+                if (pointerPiece != null && pointerPiece.part == pointerPart) {
+                    // 本方棋子, 同时是from指向
+                    curFromPiece = situation.getPiece(pointerPlace);
+                    markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
+                    log.info("true -> 当前焦点位置有棋子且是本方棋子");
+                    return;
                 }
+                log.warn("warning -> from 焦点指示错误");
+                return;
             }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
+            if (pointerPlace.equals(curFromPiece.getPlace())) {
+                log.warn("false -> from == to");
+                return;
             }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
+            // 当前焦点位置有棋子且是本方棋子
+            if (pointerPiece != null && pointerPiece.part == pointerPart) {
+                assert curFromPiece.part == pointerPart : "当前焦点位置有棋子且是本方棋子 之前指向了对方棋子";
+                // 更新 curFromPiece
+                curFromPiece = pointerPiece;
+                markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
+                log.info("true -> 更新 curFromPiece");
+                return;
             }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
+            // 如果不符合规则则直接返回
+            if (!curFromPiece.role.getRule().check(situation.getBoardPiece(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
+                // 如果当前指向棋子是本方棋子
+                log.warn("不符合走棋规则");
+                return;
             }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
+            setEnabled(false);
+            // 数据落子
+            Place form = curFromPiece.getPlace();
+            situation.realLocatePiece(form, pointerPlace);
+            // 更新标记
+            curFromPiece = null;
+            // 更改标记
+            markHandle.endedStep(pointerPlace);
+            setEnabled(true);
         });
     }
 
@@ -158,7 +146,7 @@ public class BoardPanel extends JPanel {
         int x = (fWidth - imgWidth) / 2;
         int y = (fHeight - imgHeight) / 2;
         // 520 576 514 567
-        System.out.println(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
+        log.info(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
         g.drawImage(img, 0, 0, null);
     }
 }
