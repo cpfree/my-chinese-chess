@@ -1,5 +1,6 @@
 package cn.cpf.app.chess.res;
 
+import cn.cpf.app.chess.bean.AnalysisBean;
 import cn.cpf.app.chess.bean.ChessPiece;
 
 import java.util.List;
@@ -33,7 +34,13 @@ public interface Rule {
      */
     boolean check(ChessPiece[][] pieces, Part part, Place from, Place to);
 
-    List<Place> find(ChessPiece[][] pieces, Part part, Place place);
+    default List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        throw new RuntimeException();
+    }
+
+    default List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
+        throw new RuntimeException();
+    }
 
     default int checkPlace(ChessPiece chessPiece, Part part) {
         if (chessPiece == null) {

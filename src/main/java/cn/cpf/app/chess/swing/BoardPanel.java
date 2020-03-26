@@ -96,7 +96,7 @@ public class BoardPanel extends JPanel {
                 return;
             }
             // 如果不符合规则则直接返回
-            if (!curFromPiece.role.getRule().check(situation.getBoardPiece(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
+            if (!curFromPiece.role.check(situation.getAnalysisBean(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
                 // 如果当前指向棋子是本方棋子
                 log.warn("不符合走棋规则");
                 return;

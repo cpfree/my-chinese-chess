@@ -1,11 +1,13 @@
 package cn.cpf.app.chess.domain;
 
 import cn.cpf.app.chess.base.ArrayUtils;
+import cn.cpf.app.chess.bean.AnalysisBean;
 import cn.cpf.app.chess.bean.ChessPiece;
 import cn.cpf.app.chess.main.ChessConfig;
 import cn.cpf.app.chess.res.ChessDefined;
 import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Place;
+import cn.cpf.app.chess.res.Role;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -26,6 +28,9 @@ public class Situation {
     @Getter
     private ChessPiece[][] boardPiece;
 
+    @Getter
+    private AnalysisBean analysisBean;
+
     /**
      * 下一步行走的势力
      */
@@ -37,6 +42,11 @@ public class Situation {
      */
     @Getter
     public int[][][] scores;
+
+    /**
+     * TODO 被将军, 被将军时不能走别的路.
+     */
+    public boolean isJiang;
 
     /**
      * 下棋记录
@@ -51,24 +61,11 @@ public class Situation {
     public Situation() {
     }
 
-    private ChessPiece redBoss;
-    private ChessPiece blackBoss;
-
-    /**
-     * @return boss 是否为面对面
-     */
-    public boolean faceToFace(Part part, Place nextPlace) {
-        Place redBossPlace = redBoss.getPlace();
-        Place blackBossPlace = blackBoss.getPlace();
-        if (redBossPlace.x != blackBossPlace.x) {
-            return false;
-        }
-        return ArrayUtils.nullInMiddle(boardPiece[redBossPlace.x], redBossPlace.y, redBossPlace.y);
-    }
 
     public void init(List<ChessPiece> list) {
         boardPiece = new ChessPiece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
         list.forEach(it -> boardPiece[it.getPlace().x][it.getPlace().y] = it);
+        analysisBean = new AnalysisBean(boardPiece);
         // 获取先手方配置信息
         nextPart = ChessConfig.firstPart;
         // TODO 计算分数
@@ -127,6 +124,9 @@ public class Situation {
         boardPiece[from.x][from.y] = null;
         boardPiece[to.x][to.y] = fromPiece;
         fromPiece.setPlace(to);
+        if (fromPiece.role == Role.Boss) {
+            analysisBean.updatePlace(fromPiece.part, to);
+        }
         // 添加记录
         situationRecord.addRecord(nextPart, fromPiece.piece, from, to, eatenPiece == null ? null : eatenPiece.piece);
 

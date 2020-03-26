@@ -1,6 +1,7 @@
 package cn.cpf.app.chess.res;
 
 import cn.cpf.app.chess.base.ArrayUtils;
+import cn.cpf.app.chess.bean.AnalysisBean;
 import cn.cpf.app.chess.bean.ChessPiece;
 import lombok.Getter;
 
@@ -32,25 +33,27 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
+            ChessPiece[][] pieces = analysisBean.chessPieces;
             int x = place.x;
             int y = place.y;
             // TODO 待优化
             List<Place> list = new ArrayList<>(4);
             // x轴移动
+            Place oppoBossPlace = analysisBean.getOppoPlace(part);
             if (x == 4) {
-                if (checkPlace(pieces[3][y], part) >= 0) {
+                // 对方boss x坐标为3, 且移动后双 boss 不会对面
+                if (checkPlace(pieces[3][y], part) >= 0 && !(oppoBossPlace.x == 3 && analysisBean.bossF2fAfterBossMove(part, Place.of(3, y)))) {
                     list.add(Place.of(3, y));
                 }
-                if (checkPlace(pieces[5][y], part) >= 0) {
+                if (checkPlace(pieces[5][y], part) >= 0 && !(oppoBossPlace.x == 5 && analysisBean.bossF2fAfterBossMove(part, Place.of(5, y)))) {
                     list.add(Place.of(5, y));
                 }
             } else {
-                if (checkPlace(pieces[4][y], part) >= 0) {
+                if (checkPlace(pieces[4][y], part) >= 0 && !(oppoBossPlace.x == 4 && analysisBean.bossF2fAfterBossMove(part, Place.of(4, y)))) {
                     list.add(Place.of(4, y));
                 }
             }
-            int y_center;
             if (Part.RED == part) {
                 if (y == 8) {
                     if (checkPlace(pieces[x][7], part) >= 0) {
@@ -507,11 +510,37 @@ public enum Role {
         }
     });
 
-    @Getter
     private final Rule rule;
 
     Role(Rule rule) {
         this.rule = rule;
+    }
+
+    public boolean check(AnalysisBean analysisBean, Part part, Place from, Place to) {
+        if (this == Role.Boss) {
+            if (analysisBean.bossF2fAfterBossMove(part, to)) {
+                return false;
+            }
+            return rule.check(analysisBean.chessPieces, part, from, to);
+        } else {
+            if (analysisBean.bossF2fAfterLeave(from)) {
+                return false;
+            }
+            return rule.check(analysisBean.chessPieces, part, from, to);
+        }
+    }
+
+
+    public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
+        if (this == Role.Boss) {
+            return rule.find(analysisBean, part, place);
+        } else {
+            if (analysisBean.bossF2fAfterLeave(place)) {
+                return rule.find(analysisBean.chessPieces, part, place);
+            } else {
+                return Collections.emptyList();
+            }
+        }
     }
 
 }
