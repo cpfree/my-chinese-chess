@@ -10,6 +10,8 @@ public class Place {
 
 	private static Place[][] placePool;
 
+	public static final Place NULL_PLACE = new Place(-1, -1);
+
 	static {
 		placePool = new Place[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
 		for (int x = 0; x < ChessDefined.RANGE_X; x++){

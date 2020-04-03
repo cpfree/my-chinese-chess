@@ -1,6 +1,7 @@
 package cn.cpf.app.chess.algorithm;
 
 import cn.cpf.app.chess.bean.ChessPiece;
+import cn.cpf.app.chess.res.ChessDefined;
 import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Role;
 
@@ -14,12 +15,16 @@ public class BoardEvaluate {
 	 */
 	public static int getCurPartEvaluateScore(ChessPiece[][] chessPieces, Part curPart) {
         int num = 0;
-        for (ChessPiece[] chessPiece : chessPieces) {
-            for (ChessPiece piece : chessPiece) {
+        for (int x = 0; x < ChessDefined.RANGE_X; x++) {
+            for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
+                ChessPiece piece = chessPieces[x][y];
+                if (piece == null) {
+                    continue;
+                }
                 if (piece.part == curPart) {
-                    num += getSingleScore(piece.role);
+                    num += getSingleScore(chessPieces, piece.role, x, y);
                 } else {
-                    num -= getSingleScore(piece.role);
+                    num -= getSingleScore(chessPieces, piece.role, x, y);
                 }
             }
         }
@@ -27,14 +32,14 @@ public class BoardEvaluate {
     }
 
 
-    public static int getSingleScore(Role role) {
+    public static int getSingleScore(ChessPiece[][] chessPieces, Role role, int x, int y) {
         switch (role) {
             case Boss:
-                return 100;
+                return 1000000;
             case car:
                 return 1000;
             case horse:
-                return 480;
+                return 460;
             case cannon:
                 return 450;
             case soldier:

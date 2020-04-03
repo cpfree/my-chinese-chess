@@ -68,16 +68,16 @@ public enum Role {
                     }
                 }
             } else {
-                if (y == 2) {
-                    if (checkPlace(pieces[x][1], part) >= 0) {
-                        list.add(Place.of(x, 1));
+                if (y == 1) {
+                    if (checkPlace(pieces[x][0], part) >= 0) {
+                        list.add(Place.of(x, 0));
                     }
-                    if (checkPlace(pieces[x][3], part) >= 0) {
-                        list.add(Place.of(x, 3));
-                    }
-                } else {
                     if (checkPlace(pieces[x][2], part) >= 0) {
                         list.add(Place.of(x, 2));
+                    }
+                } else {
+                    if (checkPlace(pieces[x][1], part) >= 0) {
+                        list.add(Place.of(x, 1));
                     }
                 }
             }
@@ -111,7 +111,7 @@ public enum Role {
         @Override
         public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
             int x = place.x;
-            int yCenter = Part.RED == part ? 8 : 2;
+            int yCenter = Part.RED == part ? 8 : 1;
             if (x != 4) {
                 if (checkPlace(pieces[4][yCenter], part) >= 0) {
                     return Collections.singletonList(Place.of(4, yCenter));
@@ -162,7 +162,7 @@ public enum Role {
         public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
             int x = place.x;
             int y = place.y;
-            int yCenter = Part.RED == part ? 7 : 3;
+            int yCenter = Part.RED == part ? 7 : 2;
             List<Place> list = new ArrayList<>(4);
             if (x == 0) {
                 if (pieces[1][yCenter - 1] == null && checkPlace(pieces[2][yCenter - 2], part) >= 0) {
@@ -238,10 +238,9 @@ public enum Role {
                     list.add(Place.of(x, yInit));
                     continue;
                 }
-                if (chessPiece.part == part) {
-                    break;
+                if (chessPiece.part != part) {
+                    list.add(Place.of(x, yInit));
                 }
-                list.add(Place.of(x, yInit));
                 break;
             }
             for (int x = xInit + 1; x < 9 ; x++) {
@@ -250,10 +249,9 @@ public enum Role {
                     list.add(Place.of(x, yInit));
                     continue;
                 }
-                if (chessPiece.part == part) {
-                    break;
+                if (chessPiece.part != part) {
+                    list.add(Place.of(x, yInit));
                 }
-                list.add(Place.of(x, yInit));
                 break;
             }
             for (int y = yInit - 1; y >= 0 ; y--) {
@@ -262,10 +260,9 @@ public enum Role {
                     list.add(Place.of(xInit, y));
                     continue;
                 }
-                if (chessPiece.part == part) {
-                    break;
+                if (chessPiece.part != part) {
+                    list.add(Place.of(xInit, y));
                 }
-                list.add(Place.of(xInit, y));
                 break;
             }
             for (int y = yInit + 1; y <= 9 ; y++) {
@@ -274,10 +271,9 @@ public enum Role {
                     list.add(Place.of(xInit, y));
                     continue;
                 }
-                if (chessPiece.part == part) {
-                    break;
+                if (chessPiece.part != part) {
+                    list.add(Place.of(xInit, y));
                 }
-                list.add(Place.of(xInit, y));
                 break;
             }
             return list;
@@ -315,10 +311,10 @@ public enum Role {
                     if (chessPiece == null) {
                         continue;
                     }
-                    if (chessPiece.part == part) {
-                        break;
+                    if (chessPiece.part != part) {
+                        list.add(Place.of(x, yInit));
                     }
-                    list.add(Place.of(x, yInit));
+                    break;
                 } else {
                     if (chessPiece == null) {
                         list.add(Place.of(x, yInit));
@@ -335,10 +331,10 @@ public enum Role {
                     if (chessPiece == null) {
                         continue;
                     }
-                    if (chessPiece.part == part) {
-                        break;
+                    if (chessPiece.part != part) {
+                        list.add(Place.of(x, yInit));
                     }
-                    list.add(Place.of(x, yInit));
+                    break;
                 } else {
                     if (chessPiece == null) {
                         list.add(Place.of(x, yInit));
@@ -349,16 +345,16 @@ public enum Role {
                 }
             }
             kong = false;
-            for (int y = yInit - 1; y >= 0 ; y++) {
+            for (int y = yInit - 1; y >= 0 ; y--) {
                 ChessPiece chessPiece = pieces[xInit][y];
                 if (kong) {
                     if (chessPiece == null) {
                         continue;
                     }
-                    if (chessPiece.part == part) {
-                        break;
+                    if (chessPiece.part != part) {
+                        list.add(Place.of(xInit, y));
                     }
-                    list.add(Place.of(xInit, y));
+                    break;
                 } else {
                     if (chessPiece == null) {
                         list.add(Place.of(xInit, y));
@@ -375,10 +371,10 @@ public enum Role {
                     if (chessPiece == null) {
                         continue;
                     }
-                    if (chessPiece.part == part) {
-                        break;
+                    if (chessPiece.part != part) {
+                        list.add(Place.of(xInit, y));
                     }
-                    list.add(Place.of(xInit, y));
+                    break;
                 } else {
                     if (chessPiece == null) {
                         list.add(Place.of(xInit, y));
@@ -523,7 +519,7 @@ public enum Role {
             }
             return rule.check(analysisBean.chessPieces, part, from, to);
         } else {
-            if (analysisBean.bossF2fAfterLeave(from)) {
+            if (to.x != from.x && analysisBean.bossF2fAfterLeave(from)) {
                 return false;
             }
             return rule.check(analysisBean.chessPieces, part, from, to);
@@ -535,11 +531,11 @@ public enum Role {
         if (this == Role.Boss) {
             return rule.find(analysisBean, part, place);
         } else {
-            if (analysisBean.bossF2fAfterLeave(place)) {
-                return rule.find(analysisBean.chessPieces, part, place);
-            } else {
-                return Collections.emptyList();
-            }
+            return rule.find(analysisBean.chessPieces, part, place);
+//            if (analysisBean.bossF2fAfterLeave(place)) {
+//            } else {
+//                return Collections.emptyList();
+//            }
         }
     }
 

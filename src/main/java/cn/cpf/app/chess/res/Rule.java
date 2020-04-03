@@ -52,12 +52,12 @@ public interface Rule {
         return 1;
     }
 
-    default void addPlaceIntoList(ChessPiece[][] chessPieces, Part part, List<Place> list, Place place, int x, int y) {
+    default void addPlaceIntoListWhenXyIsNull(ChessPiece[][] chessPieces, Part part, List<Place> list, Place place, int x, int y) {
         if (chessPieces[x][y] != null) {
             return;
         }
         ChessPiece piece = chessPieces[place.x][place.y];
-        if (piece == null || piece.part == part) {
+        if (piece == null || piece.part != part) {
             list.add(place);
         }
     }
@@ -72,7 +72,7 @@ public interface Rule {
      */
     default void addPlaceIntoList(ChessPiece[][] chessPieces, Part part, List<Place> list, Place place) {
         ChessPiece piece = chessPieces[place.x][place.y];
-        if (piece == null || piece.part == part) {
+        if (piece == null || piece.part != part) {
             list.add(place);
         }
     }

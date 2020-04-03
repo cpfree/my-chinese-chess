@@ -1,6 +1,9 @@
 package cn.cpf.app.chess.swing;
 
+import cn.cpf.app.chess.algorithm.AlphaBeta;
+import cn.cpf.app.chess.base.ArrayUtils;
 import cn.cpf.app.chess.bean.ChessPiece;
+import cn.cpf.app.chess.bean.StepBean;
 import cn.cpf.app.chess.domain.Situation;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.main.ChessConfig;
@@ -12,8 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -33,15 +35,79 @@ public class BoardPanel extends JPanel {
         JPiece lastMarkTo = new JPiece(ChessImage.Pointer.getImage());
         JPiece MarkFrom = new JPiece(ChessImage.Pointer.getImage());
         JPiece curMark = new JPiece(ChessImage.Pointer.getImage());
+        List<JPiece> toMarkList = new ArrayList<>();
 
-        void endedStep(Place place) {
-            markHandle.lastMarkFrom.setPlaceAndShow(markHandle.MarkFrom.getPlace());
-            markHandle.lastMarkTo.setPlaceAndShow(place);
+        void endedStep(Place from, Place to) {
+            markHandle.lastMarkFrom.setPlaceAndShow(from);
+            markHandle.lastMarkTo.setPlaceAndShow(to);
             markHandle.curMark.setVisible(false);
             markHandle.MarkFrom.setVisible(false);
+            showMarkPlace(null);
         }
 
+        void showMarkPlace(List<Place> placeList) {
+            toMarkList.forEach(JPiece::hide);
+            if (placeList != null) {
+                int size = toMarkList.size();
+                for (int i = 0; i < placeList.size(); i++) {
+                    if (size <= i) {
+                        JPiece piece = new JPiece(ChessImage.Pointer.getImage());
+                        toMarkList.add(i, piece);
+                        BoardPanel.this.add(piece.getComp());
+                    }
+                    JPiece jPiece = toMarkList.get(i);
+                    jPiece.setPlaceAndShow(placeList.get(i));
+                }
+            }
+        }
     }
+
+
+    public Part comRunOneStep() {
+        long t = System.currentTimeMillis();
+        ChessPiece[][] boardPiece = situation.getBoardPiece();
+        boardPiece = ArrayUtils.deepClone(boardPiece);
+        StepBean evaluatedPlace = AlphaBeta.getEvaluatedPlace(boardPiece, situation.getNextPart(), ChessConfig.deep);
+        Part part = guiLocatePiece(evaluatedPlace.from, evaluatedPlace.to);
+        log.info("time: {}", (System.currentTimeMillis() - t));
+        return part;
+    }
+
+    /**
+     * 运行
+     */
+    protected void run(){
+        new Thread(() -> {
+            while (ChessConfig.comRunnable) {
+                try {
+                    // 若当前执棋手是 COM
+                    if (PlayerType.COM.equals(ChessConfig.getPlayerType(situation.getNextPart()))){
+                        Part part = comRunOneStep();
+                        // 落子
+                        // 判断是否结束
+                        if (part != null){
+                            ChessConfig.comRunnable = false;
+                        }
+                    } else {
+                        break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // 暂停COM
+                    ChessConfig.comRunnable = false;
+                    JOptionPane.showMessageDialog(null, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE);
+                    break;
+                }
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+
 
     /**
      * Create the panel.
@@ -76,6 +142,9 @@ public class BoardPanel extends JPanel {
                     // 本方棋子, 同时是from指向
                     curFromPiece = situation.getPiece(pointerPlace);
                     markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
+                    // 获取toList
+                    List<Place> list = curFromPiece.role.find(situation.getAnalysisBean(), pointerPart, pointerPlace);
+                    markHandle.showMarkPlace(list);
                     log.info("true -> 当前焦点位置有棋子且是本方棋子");
                     return;
                 }
@@ -92,6 +161,8 @@ public class BoardPanel extends JPanel {
                 // 更新 curFromPiece
                 curFromPiece = pointerPiece;
                 markHandle.MarkFrom.setPlaceAndShow(pointerPlace);
+                List<Place> list = curFromPiece.role.find(situation.getAnalysisBean(), pointerPart, pointerPlace);
+                markHandle.showMarkPlace(list);
                 log.info("true -> 更新 curFromPiece");
                 return;
             }
@@ -103,15 +174,22 @@ public class BoardPanel extends JPanel {
             }
             // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
             setEnabled(false);
-            // 数据落子
-            Place form = curFromPiece.getPlace();
-            situation.realLocatePiece(form, pointerPlace);
-            // 更新标记
-            curFromPiece = null;
-            // 更改标记
-            markHandle.endedStep(pointerPlace);
+            // 落子
+            guiLocatePiece(curFromPiece.getPlace(), pointerPlace);
             setEnabled(true);
         });
+    }
+
+    Part guiLocatePiece(Place from, Place to) {
+        Part part = situation.realLocatePiece(from, to);
+        if (part != null) {
+            JOptionPane.showMessageDialog(null,  part.name() + "胜利",  "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
+        }
+        // 更新标记
+        curFromPiece = null;
+        // 更改标记
+        markHandle.endedStep(from, to);
+        return part;
     }
 
     /**
@@ -126,27 +204,27 @@ public class BoardPanel extends JPanel {
         // 初始化棋盘
         situation = new Situation();
         situation.init(list);
-        list.forEach(it -> add(it.getJLabel()));
+        list.forEach(it -> add(it.getComp()));
 
         // 初始化标记符
         markHandle = new MarkHandle();
-        add(markHandle.curMark.getJLabel());
-        add(markHandle.MarkFrom.getJLabel());
-        add(markHandle.lastMarkFrom.getJLabel());
-        add(markHandle.lastMarkTo.getJLabel());
+        add(markHandle.curMark.getComp());
+        add(markHandle.MarkFrom.getComp());
+        add(markHandle.lastMarkFrom.getComp());
+        add(markHandle.lastMarkTo.getComp());
     }
 
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Image img = ChessImage.ChessBoard.getImage();
-        int imgWidth = img.getWidth(this);
-        int imgHeight = img.getHeight(this);// 获得图片的宽度与高度
-        int fWidth = getWidth();
-        int fHeight = getHeight();// 获得窗口的宽度与高度
-        int x = (fWidth - imgWidth) / 2;
-        int y = (fHeight - imgHeight) / 2;
-        // 520 576 514 567
-        log.info(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
-        g.drawImage(img, 0, 0, null);
-    }
+//    public void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        Image img = ChessImage.ChessBoard.getImage();
+//        int imgWidth = img.getWidth(this);
+//        int imgHeight = img.getHeight(this);// 获得图片的宽度与高度
+//        int fWidth = getWidth();
+//        int fHeight = getHeight();// 获得窗口的宽度与高度
+//        int x = (fWidth - imgWidth) / 2;
+//        int y = (fHeight - imgHeight) / 2;
+//        // 520 576 514 567
+//        log.info(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
+//        g.drawImage(img, 0, 0, null);
+//    }
 }

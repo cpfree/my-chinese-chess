@@ -119,4 +119,16 @@ public class ArrayUtils {
         return num;
     }
 
+    /**
+     * 转置矩阵, 矩阵必须是方形矩阵
+     * @param matrix
+     */
+    public static <T> T[][] deepClone(T[][] matrix){
+        int len = matrix.length;
+        T[][] arr = matrix.clone();
+        for (int i = 0; i<len;i ++){
+            arr[i] = matrix[i].clone();
+        }
+        return arr;
+    }
 }

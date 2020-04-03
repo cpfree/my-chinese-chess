@@ -35,6 +35,11 @@ public class ChessFrame extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //		setResizable(false);
 		setBounds(400, 100, ChessDefined.boardRect.width, ChessDefined.boardRect.height);
+		// 添加菜单
+		ChessMenuBar menuBar = new ChessMenuBar();
+		menuBar.setVisible(true);
+		setJMenuBar(menuBar);
+		// 添加面板
 		contentPane = new ChessPanel();
 		contentPane.setVisible(true);
 		setContentPane(contentPane);

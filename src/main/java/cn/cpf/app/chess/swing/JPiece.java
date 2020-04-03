@@ -16,27 +16,44 @@ import java.awt.*;
 public class JPiece {
 
     @Getter
-    private JLabel jLabel;
+    private JLabel comp;
 
     @Getter
     private Place place;
 
     public JPiece(Image image) {
-        jLabel = new JLabel();
-        jLabel.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
-        jLabel.setIcon(new ImageIcon(image));
-        this.hide();
+        this(image, null);
     }
 
-    public JPiece(Image image, @NonNull Place place) {
-        jLabel = new JLabel();
-        jLabel.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
-        jLabel.setIcon(new ImageIcon(image));
-        this.setPlace(place);
+    public JPiece(Image image, Place place) {
+        comp = new JLabel();
+        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
+        comp.setIcon(new ImageIcon(image));
+        if (place == null) {
+            this.hide();
+        } else {
+            this.setPlace(place);
+        }
+    }
+
+    public JPiece(Piece piece, Place place) {
+        comp = new JLabel();
+        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
+        comp.setText(piece.name().replaceAll("Red|Black", ""));
+        if (piece.part == Part.RED) {
+            comp.setForeground(Color.red);
+        } else {
+            comp.setForeground(Color.black);
+        }
+        if (place == null) {
+            this.hide();
+        } else {
+            this.setPlace(place);
+        }
     }
 
     private void setPlace(int x, int y) {
-        jLabel.setLocation(ChessDefined.convertPlaceToLocation(x, y));
+        comp.setLocation(ChessDefined.convertPlaceToLocation(x, y));
     }
 
     public void hide() {
@@ -55,7 +72,7 @@ public class JPiece {
     }
 
     public void setVisible(boolean visible) {
-        jLabel.setVisible(visible);
+        comp.setVisible(visible);
     }
 
 }

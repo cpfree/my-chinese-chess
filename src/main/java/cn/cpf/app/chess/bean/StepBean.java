@@ -10,12 +10,16 @@ import cn.cpf.app.chess.res.Place;
  */
 public class StepBean {
 
-    Place from;
-    Place to;
+    public final Place from;
+    public final Place to;
 
     public StepBean(Place from, Place to) {
         this.from = from;
         this.to = to;
     }
 
+    @Override
+    public String toString() {
+        return "StepBean{" + from + " -> " + to + '}';
+    }
 }

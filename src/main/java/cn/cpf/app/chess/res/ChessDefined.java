@@ -22,7 +22,7 @@ public interface ChessDefined {
     /**
      * 棋盘尺寸
      */
-    Dimension boardRect = new Dimension(536, 615);
+    Dimension boardRect = new Dimension(536, 638);
 
     /**
      * 棋子宽度和高度
