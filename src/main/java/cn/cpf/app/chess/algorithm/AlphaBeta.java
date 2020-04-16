@@ -8,9 +8,7 @@ import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Place;
 import cn.cpf.app.chess.res.Role;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * @author CPF
@@ -46,16 +44,21 @@ public class AlphaBeta {
 		HashSet<StepBean> bestPlace = new HashSet<>();
 		// 2. 获取可以下子的空位列表
 		// 生成待选的列表，就是可以下子的空位
+		List<Place> placeList = new ArrayList<>();
 		for (int x = 0; x < ChessDefined.RANGE_X; x++) {
 			for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
 				ChessPiece fromPiece = pieces[x][y];
 				if (fromPiece != null && fromPiece.part == curPart) {
 					Place from = Place.of(x, y);
-					// list 排序
 					List<Place> list = fromPiece.role.find(analysisBean, curPart, from);
 					if (list.isEmpty()) {
 						continue;
 					}
+					placeList.addAll(list);
+					// list 排序
+					list.sort((o1, o2) -> {
+						return analysisBean.getSingleScore(pieces[o2.x][o2.y], o2.y) - analysisBean.getSingleScore(pieces[o1.x][o1.y], o1.y);
+					});
 					for (Place to : list) {
 						// 备份
 						ChessPiece eatenPiece = pieces[to.x][to.y];

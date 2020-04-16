@@ -96,17 +96,20 @@ public class AnalysisBean {
                     continue;
                 }
                 if (piece.part == curPart) {
-                    num += getSingleScore(piece.role, curPart, y);
+                    num += getSingleScore(piece, y);
                 } else {
-                    num -= getSingleScore(piece.role, curPart, y);
+                    num -= getSingleScore(piece, y);
                 }
             }
         }
         return num;
     }
 
-    public int getSingleScore(Role role, Part part, int y) {
-        switch (role) {
+    public int getSingleScore(ChessPiece piece, int y) {
+        if (piece == null) {
+            return 0;
+        }
+        switch (piece.role) {
             case Boss:
                 return 1000000;
             case car:
@@ -116,7 +119,7 @@ public class AnalysisBean {
             case cannon:
                 return 448 + blackPieceNum + redPieceNum;
             case soldier:
-                if (part == Part.RED) {
+                if (piece.part == Part.RED) {
                     if (y >= 5) {
                         return 150;
                     } else if (y > 2) {
