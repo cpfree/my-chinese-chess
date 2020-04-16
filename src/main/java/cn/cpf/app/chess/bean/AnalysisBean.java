@@ -6,6 +6,9 @@ import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Place;
 import cn.cpf.app.chess.res.Role;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * <b>Description : </b>
  *
@@ -174,6 +177,15 @@ public class AnalysisBean {
             return false;
         }
         return ArrayUtils.oneInMiddle(chessPieces[redBoss.x], redBoss.y, blackBoss.y);
+    }
+
+    /**
+     * @return boss 是否为面对面
+     */
+    public List<Place> filterPlace(List<Place> places) {
+        return places.stream().filter(it ->
+            it.x == redBoss.x && it.y <= redBoss.y && it.y >= blackBoss.y
+        ).collect(Collectors.toList());
     }
 
 }

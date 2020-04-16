@@ -99,7 +99,7 @@ public class BoardPanel extends JPanel {
                     break;
                 }
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(ChessConfig.interval_time);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -214,17 +214,17 @@ public class BoardPanel extends JPanel {
         add(markHandle.lastMarkTo.getComp());
     }
 
-//    public void paintComponent(Graphics g) {
-//        super.paintComponent(g);
-//        Image img = ChessImage.ChessBoard.getImage();
-//        int imgWidth = img.getWidth(this);
-//        int imgHeight = img.getHeight(this);// 获得图片的宽度与高度
-//        int fWidth = getWidth();
-//        int fHeight = getHeight();// 获得窗口的宽度与高度
-//        int x = (fWidth - imgWidth) / 2;
-//        int y = (fHeight - imgHeight) / 2;
-//        // 520 576 514 567
-//        log.info(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
-//        g.drawImage(img, 0, 0, null);
-//    }
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Image img = ChessImage.ChessBoard.getImage();
+        int imgWidth = img.getWidth(this);
+        int imgHeight = img.getHeight(this);// 获得图片的宽度与高度
+        int fWidth = getWidth();
+        int fHeight = getHeight();// 获得窗口的宽度与高度
+        int x = (fWidth - imgWidth) / 2;
+        int y = (fHeight - imgHeight) / 2;
+        // 520 576 514 567
+        log.info(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
+        g.drawImage(img, 0, 0, null);
+    }
 }

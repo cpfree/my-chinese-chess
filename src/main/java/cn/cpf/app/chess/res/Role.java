@@ -531,11 +531,11 @@ public enum Role {
         if (this == Role.Boss) {
             return rule.find(analysisBean, part, place);
         } else {
-            return rule.find(analysisBean.chessPieces, part, place);
-//            if (analysisBean.bossF2fAfterLeave(place)) {
-//            } else {
-//                return Collections.emptyList();
-//            }
+            List<Place> places = rule.find(analysisBean.chessPieces, part, place);
+            if (analysisBean.bossF2fAfterLeave(place)) {
+                return analysisBean.filterPlace(places);
+            }
+            return places;
         }
     }
 

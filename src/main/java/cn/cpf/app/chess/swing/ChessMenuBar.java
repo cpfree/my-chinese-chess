@@ -58,6 +58,12 @@ public class ChessMenuBar extends JMenuBar {
 			getBoardPanel().run();
 		});
 		mu_debug.add(com_start);
+
+		JMenuItem com_stop = new JMenuItem("COM stop");
+		com_stop.addMouseListener((LambdaMouseListener) (e) -> {
+			ChessConfig.comRunnable = false;
+		});
+		mu_debug.add(com_stop);
 	}
 
 

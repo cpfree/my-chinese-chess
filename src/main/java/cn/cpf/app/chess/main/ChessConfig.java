@@ -34,7 +34,9 @@ public class ChessConfig {
 
     public static final PlayerType BlackPlayer = PlayerType.COM;
 
-    public static final int deep = 6;
+    public static final int deep = 4;
+
+    public static final int interval_time = 600;
 
     public static boolean comRunnable;
 
