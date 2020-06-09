@@ -36,7 +36,6 @@ public class ChessMenuBar extends JMenuBar {
 		mu_setting.add(mntmNewMenuItem);
 	}
 
-
 	private void addDebugMenu() {
 		JMenu mu_debug = new JMenu("Debug");
 		add(mu_debug);
@@ -59,11 +58,36 @@ public class ChessMenuBar extends JMenuBar {
 		});
 		mu_debug.add(com_start);
 
-		JMenuItem com_stop = new JMenuItem("COM stop");
+		JMenuItem btn = new JMenuItem("COM enable");
+		btn.addMouseListener((LambdaMouseListener) (e) -> {
+			ChessConfig.comRunnable = true;
+		});
+		mu_debug.add(btn);
+
+		JMenuItem com_stop = new JMenuItem("COM disable");
 		com_stop.addMouseListener((LambdaMouseListener) (e) -> {
 			ChessConfig.comRunnable = false;
 		});
 		mu_debug.add(com_stop);
+
+
+		btn = new JMenuItem("COM 4");
+		btn.addMouseListener((LambdaMouseListener) (e) -> {
+			ChessConfig.deep = 4;
+		});
+		mu_debug.add(btn);
+
+		btn = new JMenuItem("COM 5");
+		btn.addMouseListener((LambdaMouseListener) (e) -> {
+			ChessConfig.deep = 5;
+		});
+		mu_debug.add(btn);
+
+		btn = new JMenuItem("COM 6");
+		btn.addMouseListener((LambdaMouseListener) (e) -> {
+			ChessConfig.deep = 6;
+		});
+		mu_debug.add(btn);
 	}
 
 

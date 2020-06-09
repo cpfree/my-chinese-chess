@@ -454,20 +454,15 @@ public enum Role {
                     return false;
                 }
                 // 过河前不能左右走
-                if (from.y >= 5 && to.x != from.x) {
-                    return false;
-                }
+                return from.y < 5 || to.x == from.x;
             } else {
                 // 不能后退
                 if (to.y < from.y) {
                     return false;
                 }
                 // 过河前不能左右走
-                if (from.y <= 4 && to.x != from.x) {
-                    return false;
-                }
+                return from.y > 4 || to.x == from.x;
             }
-            return true;
         }
 
         @Override

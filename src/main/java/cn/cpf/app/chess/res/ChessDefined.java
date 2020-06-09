@@ -28,6 +28,10 @@ public interface ChessDefined {
      * 棋子宽度和高度
      */
     int PIECE_WIDTH = 56;
+    /**
+     * 棋子宽度和高度
+     */
+    int PIECE_HEIGHT = PIECE_WIDTH;
 
     /**
      * 棋盘 x 坐标初始位置

@@ -3,12 +3,16 @@ package cn.cpf.app.chess.algorithm;
 import cn.cpf.app.chess.bean.AnalysisBean;
 import cn.cpf.app.chess.bean.ChessPiece;
 import cn.cpf.app.chess.bean.StepBean;
+import cn.cpf.app.chess.main.ChessConfig;
 import cn.cpf.app.chess.res.ChessDefined;
 import cn.cpf.app.chess.res.Part;
 import cn.cpf.app.chess.res.Place;
 import cn.cpf.app.chess.res.Role;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 
 /**
  * @author CPF
@@ -40,11 +44,12 @@ public class AlphaBeta {
 	public static StepBean getEvaluatedPlace(ChessPiece[][] pieces, Part curPart, int deep){
 		// 1. 初始化各个变量
 		AnalysisBean analysisBean = new AnalysisBean(pieces);
+
 		int best = MIN;
 		HashSet<StepBean> bestPlace = new HashSet<>();
 		// 2. 获取可以下子的空位列表
 		// 生成待选的列表，就是可以下子的空位
-		List<Place> placeList = new ArrayList<>();
+		List<StepBean> stepBeanList = new ArrayList<>();
 		for (int x = 0; x < ChessDefined.RANGE_X; x++) {
 			for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
 				ChessPiece fromPiece = pieces[x][y];
@@ -54,38 +59,59 @@ public class AlphaBeta {
 					if (list.isEmpty()) {
 						continue;
 					}
-					placeList.addAll(list);
-					// list 排序
-					list.sort((o1, o2) -> {
-						return analysisBean.getSingleScore(pieces[o2.x][o2.y], o2.y) - analysisBean.getSingleScore(pieces[o1.x][o1.y], o1.y);
+					list.forEach(item -> {
+						stepBeanList.add(new StepBean(from, item, analysisBean.getSingleScore(pieces[item.x][item.y], item.y)));
 					});
-					for (Place to : list) {
-						// 备份
-						ChessPiece eatenPiece = pieces[to.x][to.y];
-						int score;
-						// 判断是否胜利
-						if (eatenPiece != null && eatenPiece.role == Role.Boss) {
-							score = MAX;
-						} else {
-							// 走棋
-							analysisBean.goForward(from, to, eatenPiece);
-							// 评分
-							score = negativeMaximum(analysisBean, Part.getOpposite(curPart), deep - 1, -best);
-							// 退回上一步
-							analysisBean.backStep(from, to, eatenPiece);
-						}
-						if (score == best) { // 找到相同的分数, 就添加这一步
-							bestPlace.add(new StepBean(from, to));
-						}
-						if (score > best) { // 找到一个更好的分，就把以前存的位子全部清除
-							best = score;
-							bestPlace.clear();
-							bestPlace.add(new StepBean(from, to));
-						}
-					}
 				}
 			}
 		}
+
+
+		int pieceNum = analysisBean.getPieceNum();
+
+		if (pieceNum > 24) {
+			deep --;
+		} else if (pieceNum > 16) {
+		} else if (pieceNum > 8) {
+			deep ++;
+		} else if (pieceNum > 6) {
+			deep += 2;
+		} else if (pieceNum > 4) {
+			deep += 3;
+		} else {
+			deep += 4;
+		}
+
+		// list 排序
+		stepBeanList.sort((o1, o2) -> o2.score - o1.score);
+
+		for (StepBean item : stepBeanList) {
+			Place from = item.from;
+			Place to = item.to;
+			// 备份
+			ChessPiece eatenPiece = pieces[to.x][to.y];
+			int score;
+			// 判断是否胜利
+			if (eatenPiece != null && eatenPiece.role == Role.Boss) {
+				score = MAX;
+			} else {
+				// 走棋
+				analysisBean.goForward(from, to, eatenPiece);
+				// 评分
+				score = negativeMaximum(analysisBean, Part.getOpposite(curPart), deep - 1, -best);
+				// 退回上一步
+				analysisBean.backStep(from, to, eatenPiece);
+			}
+			if (score == best) { // 找到相同的分数, 就添加这一步
+				bestPlace.add(item);
+			}
+			if (score > best) { // 找到一个更好的分，就把以前存的位子全部清除
+				best = score;
+				bestPlace.clear();
+				bestPlace.add(item);
+			}
+		}
+
 		// 随机选择一个最好的一步
 		int count = bestPlace.size();
 		int ran = new Random().nextInt(count);
@@ -105,45 +131,58 @@ public class AlphaBeta {
 		final ChessPiece[][] pieces = analysisBean.chessPieces;
         // 2. 获取可以下子的空位列表
         // 生成待选的列表，就是可以下子的空位
+		List<StepBean> stepBeanList = new ArrayList<>();
         for (int x = 0; x < ChessDefined.RANGE_X; x++) {
-            for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
-                final ChessPiece fromPiece = pieces[x][y];
-                if (fromPiece != null && fromPiece.part == curPart) {
-                    final Place from = Place.of(x, y);
-                    // list 排序
-                    final List<Place> list = fromPiece.role.find(analysisBean, curPart, from);
-                    if (list.isEmpty()) {
-                        continue;
-                    }
-                    for (Place to : list) {
-                        // 备份
-                        ChessPiece eatenPiece = pieces[to.x][to.y];
-                        int score;
-                        // 判断是否胜利
-						if (eatenPiece != null && eatenPiece.role == Role.Boss) {
-							score = MAX;
-						} else {
-							// 走棋
-							analysisBean.goForward(from, to, eatenPiece);
-							// 评估
-							if (deep <= 1) {
-								score = analysisBean.getCurPartEvaluateScore(curPart);
-							} else {
-								score = negativeMaximum(analysisBean, Part.getOpposite(curPart), deep - 1, -best);
-							}
-							// 退回上一步
-							analysisBean.backStep(from, to, eatenPiece);
+			for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
+				final ChessPiece fromPiece = pieces[x][y];
+				if (fromPiece != null && fromPiece.part == curPart) {
+					final Place from = Place.of(x, y);
+					// list 排序
+					final List<Place> list = fromPiece.role.find(analysisBean, curPart, from);
+					if (list.isEmpty()) {
+						continue;
+					}
+					list.forEach(item -> {
+						int singleScore = analysisBean.getSingleScore(pieces[item.x][item.y], item.y);
+						if (singleScore > 0 || deep > ChessConfig.sha) {
+							stepBeanList.add(new StepBean(from, item, singleScore));
 						}
-						if (score > best) { // 找到一个更好的分，就更新分数
-							best = score;
-						}
-						if (score > alphaBeta) { // alpha剪枝
-							break;
-						}
-                    }
-                }
-            }
-        }
+					});
+				}
+			}
+		}
+
+		// list 排序
+		stepBeanList.sort((o1, o2) -> o2.score - o1.score);
+
+		for (StepBean item : stepBeanList) {
+			Place from = item.from;
+			Place to = item.to;
+			// 备份
+			ChessPiece eatenPiece = pieces[to.x][to.y];
+			int score;
+			// 判断是否胜利
+			if (eatenPiece != null && eatenPiece.role == Role.Boss) {
+				score = MAX;
+			} else {
+				// 走棋
+				analysisBean.goForward(from, to, eatenPiece);
+				// 评估
+				if (deep <= 1) {
+					score = analysisBean.getCurPartEvaluateScore(curPart);
+				} else {
+					score = negativeMaximum(analysisBean, Part.getOpposite(curPart), deep - 1, -best);
+				}
+				// 退回上一步
+				analysisBean.backStep(from, to, eatenPiece);
+			}
+			if (score > best) { // 找到一个更好的分，就更新分数
+				best = score;
+			}
+			if (score > alphaBeta) { // alpha剪枝
+				break;
+			}
+		}
 		return -best;
     }
 

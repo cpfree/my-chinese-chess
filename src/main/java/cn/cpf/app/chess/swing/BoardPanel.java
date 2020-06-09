@@ -63,7 +63,7 @@ public class BoardPanel extends JPanel {
     }
 
 
-    public Part comRunOneStep() {
+    private Part comRunOneStepInner() {
         long t = System.currentTimeMillis();
         ChessPiece[][] boardPiece = situation.getBoardPiece();
         boardPiece = ArrayUtils.deepClone(boardPiece);
@@ -71,6 +71,10 @@ public class BoardPanel extends JPanel {
         Part part = guiLocatePiece(evaluatedPlace.from, evaluatedPlace.to);
         log.info("time: {}", (System.currentTimeMillis() - t));
         return part;
+    }
+
+    public void comRunOneStep() {
+        new Thread(this::comRunOneStepInner).start();
     }
 
     /**
@@ -82,7 +86,7 @@ public class BoardPanel extends JPanel {
                 try {
                     // 若当前执棋手是 COM
                     if (PlayerType.COM.equals(ChessConfig.getPlayerType(situation.getNextPart()))){
-                        Part part = comRunOneStep();
+                        Part part = comRunOneStepInner();
                         // 落子
                         // 判断是否结束
                         if (part != null){
@@ -177,6 +181,9 @@ public class BoardPanel extends JPanel {
             // 落子
             guiLocatePiece(curFromPiece.getPlace(), pointerPlace);
             setEnabled(true);
+            if (ChessConfig.comRunnable) {
+                comRunOneStep();
+            }
         });
     }
 

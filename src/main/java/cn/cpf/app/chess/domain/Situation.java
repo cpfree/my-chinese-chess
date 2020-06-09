@@ -84,7 +84,7 @@ public class Situation implements Serializable {
         // 走棋
         boardPiece[from.x][from.y] = null;
         boardPiece[to.x][to.y] = fromPiece;
-        fromPiece.setPlace(to);
+        fromPiece.movePlace(to);
         // 添加记录
         situationRecord.addRecord(nextPart, fromPiece.piece, from, to, eatenPiece == null ? null : eatenPiece.piece);
 

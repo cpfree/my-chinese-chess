@@ -105,6 +105,11 @@ public class AnalysisBean {
         return num;
     }
 
+    /**
+     * @param piece
+     * @param y
+     * @return
+     */
     public int getSingleScore(ChessPiece piece, int y) {
         if (piece == null) {
             return 0;
@@ -118,6 +123,7 @@ public class AnalysisBean {
                 return 482 - blackPieceNum - redPieceNum;
             case cannon:
                 return 448 + blackPieceNum + redPieceNum;
+            // 过河之后分数更高
             case soldier:
                 if (piece.part == Part.RED) {
                     if (y >= 5) {
@@ -146,6 +152,10 @@ public class AnalysisBean {
 
     public int getPieceNum(Part curPart) {
         return curPart == Part.RED ? redPieceNum : blackPieceNum;
+    }
+
+    public int getPieceNum() {
+        return redPieceNum + blackPieceNum;
     }
 
 

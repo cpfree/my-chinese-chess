@@ -3,6 +3,7 @@ package cn.cpf.app.chess.swing;
 import cn.cpf.app.chess.res.*;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,6 +14,7 @@ import java.awt.*;
  * @author CPF
  * Date: 2020/3/18 14:39
  */
+@Slf4j
 public class JPiece {
 
     @Getter
@@ -27,7 +29,7 @@ public class JPiece {
 
     public JPiece(Image image, Place place) {
         comp = new JLabel();
-        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
+        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_HEIGHT);
         comp.setIcon(new ImageIcon(image));
         if (place == null) {
             this.hide();
@@ -38,7 +40,7 @@ public class JPiece {
 
     public JPiece(Piece piece, Place place) {
         comp = new JLabel();
-        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_WIDTH);
+        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_HEIGHT);
         comp.setText(piece.name().replaceAll("Red|Black", ""));
         if (piece.part == Part.RED) {
             comp.setForeground(Color.red);
@@ -64,6 +66,21 @@ public class JPiece {
     public void setPlace(@NonNull Place place) {
         this.place = place;
         this.setPlace(place.x, place.y);
+    }
+
+    public void movePlace(@NonNull Place place) {
+        this.place = place;
+        Point toPoint = ChessDefined.convertPlaceToLocation(place.x, place.y);
+        Point fromPoint = comp.getLocation();
+        if (fromPoint == null) {
+            setPlace(place);
+        } else {
+            try {
+                SwingUtils.moveComp(comp, toPoint);
+            } catch (InterruptedException e) {
+                log.error("", e);
+            }
+        }
     }
 
     public void setPlaceAndShow(Place place) {
