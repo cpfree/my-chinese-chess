@@ -1,7 +1,9 @@
-package cn.cpf.app.chess.res;
+package cn.cpf.app.chess.inter;
 
-import cn.cpf.app.chess.bean.AnalysisBean;
-import cn.cpf.app.chess.bean.ChessPiece;
+import cn.cpf.app.chess.algorithm.AnalysisBean;
+import cn.cpf.app.chess.swing.ChessPiece;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Place;
 
 import java.util.List;
 
@@ -34,6 +36,12 @@ public interface Rule {
      */
     boolean check(ChessPiece[][] pieces, Part part, Place from, Place to);
 
+    /**
+     * @param pieces 棋盘棋子情况
+     * @param part 当前棋手势力方
+     * @param place 当前棋子在棋盘坐标位置
+     * @return 当前棋子所有的走位集合
+     */
     default List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
         throw new RuntimeException();
     }

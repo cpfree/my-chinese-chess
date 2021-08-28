@@ -1,16 +1,16 @@
-package cn.cpf.app.chess.bean;
+package cn.cpf.app.chess.algorithm;
 
-import cn.cpf.app.chess.base.ArrayUtils;
-import cn.cpf.app.chess.res.ChessDefined;
-import cn.cpf.app.chess.res.Part;
-import cn.cpf.app.chess.res.Place;
-import cn.cpf.app.chess.res.Role;
+import cn.cpf.app.chess.swing.ChessPiece;
+import cn.cpf.app.chess.util.ArrayUtils;
+import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Place;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <b>Description : </b>
+ * <b>Description : </b> 用于ai算法的分析运算
  *
  * @author CPF
  * Date: 2020/3/25 17:33
@@ -28,17 +28,18 @@ public class AnalysisBean {
         this.chessPieces = chessPieces;
         redPieceNum = 0;
         blackPieceNum = 0;
+        // 找出boss, 和两方棋子数量
         for (ChessPiece[] chessPiece : chessPieces) {
             for (ChessPiece piece : chessPiece) {
                 if (piece != null) {
-                    if (piece.part == Part.RED) {
+                    if (Part.RED == piece.part) {
                         redPieceNum++;
-                        if (piece.role == Role.Boss) {
+                        if (piece.role == Role.BOSS) {
                             redBoss = piece.getPlace();
                         }
                     } else {
                         blackPieceNum++;
-                        if (piece.role == Role.Boss) {
+                        if (piece.role == Role.BOSS) {
                             blackBoss = piece.getPlace();
                         }
                     }
@@ -52,7 +53,7 @@ public class AnalysisBean {
         final ChessPiece movePiece = chessPieces[from.x][from.y];
         chessPieces[to.x][to.y] = movePiece;
         chessPieces[from.x][from.y] = null;
-        if (movePiece.role == Role.Boss) {
+        if (movePiece.role == Role.BOSS) {
             updatePlace(movePiece.part, to);
         }
         if (eatenPiece != null) {
@@ -69,7 +70,7 @@ public class AnalysisBean {
         chessPieces[from.x][from.y] = movePiece;
         chessPieces[to.x][to.y] = eatenPiece;
         // 退回上一步
-        if (movePiece.role == Role.Boss) {
+        if (movePiece.role == Role.BOSS) {
             updatePlace(movePiece.part, from);
         }
         if (eatenPiece != null) {
@@ -115,16 +116,16 @@ public class AnalysisBean {
             return 0;
         }
         switch (piece.role) {
-            case Boss:
+            case BOSS:
                 return 1000000;
-            case car:
+            case CAR:
                 return 1000;
-            case horse:
+            case HORSE:
                 return 482 - blackPieceNum - redPieceNum;
-            case cannon:
+            case CANNON:
                 return 448 + blackPieceNum + redPieceNum;
             // 过河之后分数更高
-            case soldier:
+            case SOLDIER:
                 if (piece.part == Part.RED) {
                     if (y >= 5) {
                         return 150;
@@ -142,8 +143,8 @@ public class AnalysisBean {
                         return 200;
                     }
                 }
-            case elephant:
-            case Counselor:
+            case ELEPHANT:
+            case COUNSELOR:
                 return 150;
             default:
                 throw new RuntimeException();

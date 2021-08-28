@@ -3,7 +3,7 @@
     <!-- 输出日志到控制台  ConsoleAppender -->
     <Properties>
         <!--申明全局别名，下面可以直接使用-->
-        <Property name="APP_Name">ity-institution</Property>
+        <Property name="APP_Name">my-chess</Property>
     </Properties>
 
     <Appenders>
@@ -17,17 +17,12 @@
 
     <!-- 控制某包下面的日志输出级别，只有大于等于这个级别才会输出 -->
     <Loggers>
-        <Logger name="java.sql" level="DEBUG"/>
         <Logger name="org.springframework" level="WARN"/>
-        <Logger name="org.apache.velocity" level="WARN"/>
         <Logger name="org.apache.http" level="WARN"/>
-        <Logger name="net.sf" level="WARN"/>
         <Logger name="org.apache.commons" level="WARN"/>
-        <Logger name="org.apache.struts" level="WARN"/>
-        <Logger name="org.mybatis.spring" level="DEBUG"/>
         <Logger name="cn.cpf" level="DEBUG"/>
 
-        <Root level="DEBUG">
+        <Root level="WARN">
             <AppenderRef ref="console_out_appender" />
         </Root>
     </Loggers>

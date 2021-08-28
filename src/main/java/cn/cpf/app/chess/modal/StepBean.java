@@ -1,9 +1,7 @@
-package cn.cpf.app.chess.bean;
-
-import cn.cpf.app.chess.res.Place;
+package cn.cpf.app.chess.modal;
 
 /**
- * <b>Description : </b>
+ * <b>Description : </b> 记录要走的一步棋
  *
  * @author CPF
  * Date: 2020/3/25 17:38

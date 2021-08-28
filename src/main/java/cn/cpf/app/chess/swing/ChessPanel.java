@@ -15,9 +15,7 @@ public class ChessPanel extends JPanel {
      * Create the panel.
      */
     public ChessPanel() {
-//        setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new BorderLayout(0, 0));
-
         // 透明
         this.setBackground(null);
         this.setOpaque(false);

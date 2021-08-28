@@ -1,9 +1,10 @@
-package cn.cpf.app.chess.res;
+package cn.cpf.app.chess.algorithm;
 
-import cn.cpf.app.chess.base.ArrayUtils;
-import cn.cpf.app.chess.bean.AnalysisBean;
-import cn.cpf.app.chess.bean.ChessPiece;
-import lombok.Getter;
+import cn.cpf.app.chess.inter.Rule;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Place;
+import cn.cpf.app.chess.util.ArrayUtils;
+import cn.cpf.app.chess.swing.ChessPiece;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +14,7 @@ public enum Role {
     /**
      * 以确定规则: 1. form 和 to 不相等
      */
-    Boss(new Rule() {
+    BOSS(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             // 一次只能走一格
@@ -35,8 +36,8 @@ public enum Role {
         @Override
         public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
             ChessPiece[][] pieces = analysisBean.chessPieces;
-            int x = place.x;
-            int y = place.y;
+            final int x = place.x;
+            final int y = place.y;
             // TODO 待优化
             List<Place> list = new ArrayList<>(4);
             // x轴移动
@@ -89,7 +90,7 @@ public enum Role {
             return 100;
         }
     }),
-    Counselor(new Rule() {
+    COUNSELOR(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             // 斜着走
@@ -141,7 +142,7 @@ public enum Role {
             return 100;
         }
 
-    }), elephant(new Rule() {
+    }), ELEPHANT(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             int xSub = to.x - from.x;
@@ -214,7 +215,7 @@ public enum Role {
             }
             return list;
         }
-    }), car(new Rule() {
+    }), CAR(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             // 直走且道路畅通
@@ -278,7 +279,7 @@ public enum Role {
             }
             return list;
         }
-    }), cannon(new Rule() {
+    }), CANNON(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             if (pieces[to.x][to.y] == null) {
@@ -386,7 +387,7 @@ public enum Role {
             }
             return list;
         }
-    }), horse(new Rule() {
+    }), HORSE(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             // 斜着走2步
@@ -441,7 +442,7 @@ public enum Role {
             }
             return list;
         }
-    }), soldier(new Rule() {
+    }), SOLDIER(new Rule() {
         @Override
         public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
             // 一次只能走一格
@@ -508,7 +509,7 @@ public enum Role {
     }
 
     public boolean check(AnalysisBean analysisBean, Part part, Place from, Place to) {
-        if (this == Role.Boss) {
+        if (this == Role.BOSS) {
             if (analysisBean.bossF2fAfterBossMove(part, to)) {
                 return false;
             }
@@ -523,7 +524,7 @@ public enum Role {
 
 
     public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
-        if (this == Role.Boss) {
+        if (this == Role.BOSS) {
             return rule.find(analysisBean, part, place);
         } else {
             List<Place> places = rule.find(analysisBean.chessPieces, part, place);

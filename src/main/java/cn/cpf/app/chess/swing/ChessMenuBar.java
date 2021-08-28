@@ -1,15 +1,15 @@
 package cn.cpf.app.chess.swing;
 
+import cn.cpf.app.chess.conf.ChessConfig;
+import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
-import cn.cpf.app.chess.main.ChessConfig;
+import lombok.NonNull;
 
 import javax.swing.*;
 
 public class ChessMenuBar extends JMenuBar {
 
 	private static final long serialVersionUID = 1L;
-
-	private BoardPanel gBPanel = null;
 
 	public ChessMenuBar() {
 		addUserMenu();
@@ -19,89 +19,43 @@ public class ChessMenuBar extends JMenuBar {
 	}
 
 	private void addGameMenu() {
-		JMenu mu_game = new JMenu("game");
-		add(mu_game);
-		
-		JMenuItem ml_reopen = new JMenuItem("重新开局");
-		mu_game.add(ml_reopen);
-		ml_reopen.addMouseListener((LambdaMouseListener) (e) -> {
-		});
+		JMenu muGame = new JMenu("game");
+		add(muGame);
+
+		addItemToMenu(muGame, "重新开局", e -> {});
+	}
+
+	private void addItemToMenu(@NonNull JMenu jMenu, String label, @NonNull LambdaMouseListener listener) {
+		JMenuItem menuItem = new JMenuItem(label);
+		menuItem.addMouseListener(listener);
+		jMenu.add(menuItem);
 	}
 
 	private void addSettingMenu() {
-		JMenu mu_setting = new JMenu("setting");
-		add(mu_setting);
-		
-		JMenuItem mntmNewMenuItem = new JMenuItem("难度");
-		mu_setting.add(mntmNewMenuItem);
+		JMenu muSetting = new JMenu("setting");
+		add(muSetting);
+		addItemToMenu(muSetting, "COM 4", e -> ChessConfig.deep = 4);
+		addItemToMenu(muSetting, "COM 5", e -> ChessConfig.deep = 5);
+		addItemToMenu(muSetting, "COM 6", e -> ChessConfig.deep = 6);
 	}
 
 	private void addDebugMenu() {
-		JMenu mu_debug = new JMenu("Debug");
-		add(mu_debug);
-		
-		JMenuItem ml_showScore = new JMenuItem("查看分数");
-		ml_showScore.addMouseListener((LambdaMouseListener) (e) -> {
-		});
-		mu_debug.add(ml_showScore);
-		
-		JMenuItem com_go = new JMenuItem("COM GO");
-		com_go.addMouseListener((LambdaMouseListener) (e) -> {
-			getBoardPanel().comRunOneStep();
-		});
-		mu_debug.add(com_go);
-
-		JMenuItem com_start = new JMenuItem("COM start");
-		com_start.addMouseListener((LambdaMouseListener) (e) -> {
-			ChessConfig.comRunnable = true;
-			getBoardPanel().run();
-		});
-		mu_debug.add(com_start);
-
-		JMenuItem btn = new JMenuItem("COM enable");
-		btn.addMouseListener((LambdaMouseListener) (e) -> {
-			ChessConfig.comRunnable = true;
-		});
-		mu_debug.add(btn);
-
-		JMenuItem com_stop = new JMenuItem("COM disable");
-		com_stop.addMouseListener((LambdaMouseListener) (e) -> {
-			ChessConfig.comRunnable = false;
-		});
-		mu_debug.add(com_stop);
-
-
-		btn = new JMenuItem("COM 4");
-		btn.addMouseListener((LambdaMouseListener) (e) -> {
-			ChessConfig.deep = 4;
-		});
-		mu_debug.add(btn);
-
-		btn = new JMenuItem("COM 5");
-		btn.addMouseListener((LambdaMouseListener) (e) -> {
-			ChessConfig.deep = 5;
-		});
-		mu_debug.add(btn);
-
-		btn = new JMenuItem("COM 6");
-		btn.addMouseListener((LambdaMouseListener) (e) -> {
-			ChessConfig.deep = 6;
-		});
-		mu_debug.add(btn);
+		JMenu muDebug = new JMenu("Debug");
+		add(muDebug);
+		addItemToMenu(muDebug, "COM 运行一次", e -> Application.instance().getComRunner().runOneTime());
+		addItemToMenu(muDebug, "COM 运行", e -> Application.instance().getComRunner().runEnable());
+		addItemToMenu(muDebug, "COM runIfEnable", e -> Application.instance().getComRunner().runIfEnable());
+		addItemToMenu(muDebug, "COM disable", e -> Application.instance().getComRunner().stopRun());
 	}
-
 
 	private void addUserMenu() {
-		JMenu mn_user = new JMenu("user");
-		add(mn_user);
-		
-		JMenuItem ml_userInfo = new JMenuItem("个人信息");
-		mn_user.add(ml_userInfo);
-		
-		JMenuItem ml_exit = new JMenuItem("退出");
-		mn_user.add(ml_exit);
+		JMenu mnUser = new JMenu("user");
+		add(mnUser);
+		addItemToMenu(mnUser, "个人信息", e -> {});
+		addItemToMenu(mnUser, "退出", e -> {});
 	}
 
+	@Deprecated
 	private BoardPanel getBoardPanel(){
 		return (BoardPanel) ((ChessPanel) ((ChessFrame) ChessMenuBar.this.getParent().getParent().getParent()).getContentPane()).getBoardPanel();
 	}

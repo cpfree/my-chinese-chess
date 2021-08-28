@@ -1,11 +1,12 @@
 package cn.cpf.app.chess.algorithm;
 
-import cn.cpf.app.chess.bean.ChessPiece;
-import cn.cpf.app.chess.res.ChessDefined;
-import cn.cpf.app.chess.res.Part;
-import cn.cpf.app.chess.res.Role;
+import cn.cpf.app.chess.swing.ChessPiece;
+import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.modal.Part;
 
 public class BoardEvaluate {
+
+    private BoardEvaluate(){}
 
 	/**
 	 * 返回对本方的实力评估, 本方为正
@@ -34,17 +35,17 @@ public class BoardEvaluate {
 
     public static int getSingleScore(ChessPiece[][] chessPieces, Role role, int x, int y) {
         switch (role) {
-            case Boss:
+            case BOSS:
                 return 1000000;
-            case car:
+            case CAR:
                 return 1000;
-            case horse:
+            case HORSE:
                 return 460;
-            case cannon:
+            case CANNON:
                 return 450;
-            case soldier:
-            case elephant:
-            case Counselor:
+            case SOLDIER:
+            case ELEPHANT:
+            case COUNSELOR:
                 return 150;
             default:
                 throw new RuntimeException();

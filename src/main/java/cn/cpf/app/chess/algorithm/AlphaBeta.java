@@ -1,13 +1,11 @@
 package cn.cpf.app.chess.algorithm;
 
-import cn.cpf.app.chess.bean.AnalysisBean;
-import cn.cpf.app.chess.bean.ChessPiece;
-import cn.cpf.app.chess.bean.StepBean;
-import cn.cpf.app.chess.main.ChessConfig;
-import cn.cpf.app.chess.res.ChessDefined;
-import cn.cpf.app.chess.res.Part;
-import cn.cpf.app.chess.res.Place;
-import cn.cpf.app.chess.res.Role;
+import cn.cpf.app.chess.swing.ChessPiece;
+import cn.cpf.app.chess.modal.StepBean;
+import cn.cpf.app.chess.conf.ChessConfig;
+import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Place;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -92,7 +90,7 @@ public class AlphaBeta {
 			ChessPiece eatenPiece = pieces[to.x][to.y];
 			int score;
 			// 判断是否胜利
-			if (eatenPiece != null && eatenPiece.role == Role.Boss) {
+			if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
 				score = MAX;
 			} else {
 				// 走棋
@@ -162,7 +160,7 @@ public class AlphaBeta {
 			ChessPiece eatenPiece = pieces[to.x][to.y];
 			int score;
 			// 判断是否胜利
-			if (eatenPiece != null && eatenPiece.role == Role.Boss) {
+			if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
 				score = MAX;
 			} else {
 				// 走棋

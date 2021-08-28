@@ -1,6 +1,6 @@
-package cn.cpf.app.chess.res;
+package cn.cpf.app.chess.conf;
 
-import cn.cpf.app.chess.bean.ChessPiece;
+import cn.cpf.app.chess.swing.ChessPiece;
 
 import java.awt.*;
 import java.awt.image.FilteredImageSource;
@@ -16,22 +16,22 @@ import java.awt.image.RGBImageFilter;
  */
 public enum ChessImage {
 
-    ChessBoard("00.jpg", false),
-    Pointer("0.jpg"),
-    BlackBoss("1.jpg"),
-    BlackCounselor("2.jpg"),
-    BlackElephant("3.jpg"),
-    BlackCar("4.jpg"),
-    BlackHorse("5.jpg"),
-    BlackCannon("6.jpg"),
-    BlackSoldier("7.jpg"),
-    RedBoss("8.jpg"),
-    RedCounselor("9.jpg"),
-    RedElephant("10.jpg"),
-    RedCar("11.jpg"),
-    RedHorse("12.jpg"),
-    RedCannon("13.jpg"),
-    RedSoldier("14.jpg");
+    CHESS_BOARD("00.jpg", false),
+    POINTER("0.jpg"),
+    BLACK_BOSS("1.jpg"),
+    BLACK_COUNSELOR("2.jpg"),
+    BLACK_ELEPHANT("3.jpg"),
+    BLACK_CAR("4.jpg"),
+    BLACK_HORSE("5.jpg"),
+    BLACK_CANNON("6.jpg"),
+    BLACK_SOLDIER("7.jpg"),
+    RED_BOSS("8.jpg"),
+    RED_COUNSELOR("9.jpg"),
+    RED_ELEPHANT("10.jpg"),
+    RED_CAR("11.jpg"),
+    RED_HORSE("12.jpg"),
+    RED_CANNON("13.jpg"),
+    RED_SOLDIER("14.jpg");
 
     Image image;
 
@@ -47,11 +47,11 @@ public enum ChessImage {
     }
 
     /**
-     * https://www.kutu66.com//Java_API_Classes/article_66492
+     * 转换图片颜色
      *
-     * @param image
+     * 参考自: https://www.kutu66.com//Java_API_Classes/article_66492
      */
-    public static Image makeColorTransparent(Image image) {
+    private static Image makeColorTransparent(Image image) {
         ImageFilter filter = new RGBImageFilter() {
             @Override
             public int filterRGB(int x, int y, int rgb) {

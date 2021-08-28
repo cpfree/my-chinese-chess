@@ -1,5 +1,8 @@
-package cn.cpf.app.chess.res;
+package cn.cpf.app.chess.modal;
 
+/**
+ * 势力类, 红方 & 黑方
+ */
 public enum Part {
 	/**
 	 * 红方势力
@@ -13,8 +16,6 @@ public enum Part {
 	
 	/**
 	 * 返回相反的势力
-	 * @param part
-	 * @return
 	 */
 	public static Part getOpposite(Part part){
 		if (part == RED){

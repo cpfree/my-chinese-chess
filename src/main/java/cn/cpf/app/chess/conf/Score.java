@@ -1,4 +1,4 @@
-package cn.cpf.app.chess.res;
+package cn.cpf.app.chess.conf;
 
 /**
  * <b>Description : </b>

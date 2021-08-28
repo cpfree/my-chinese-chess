@@ -1,9 +1,9 @@
-package cn.cpf.app.chess.domain;
+package cn.cpf.app.chess.ctrl;
 
-import cn.cpf.app.chess.bean.StepRecord;
-import cn.cpf.app.chess.res.Part;
-import cn.cpf.app.chess.res.Piece;
-import cn.cpf.app.chess.res.Place;
+import cn.cpf.app.chess.modal.StepRecord;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
+import cn.cpf.app.chess.modal.Place;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <b>Description : </b>
+ * <b>Description : </b> 步骤记录器
  *
  * @author CPF
  * Date: 2020/3/19 13:56
@@ -21,7 +21,7 @@ public class SituationRecord {
     /**
      * 历史记录
      */
-    private List<StepRecord> list = new ArrayList<>();
+    private final List<StepRecord> list = new ArrayList<>();
     /**
      * 黑棋当前走的步数
      */

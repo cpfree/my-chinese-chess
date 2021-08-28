@@ -1,15 +1,14 @@
-package cn.cpf.app.chess.bean;
+package cn.cpf.app.chess.swing;
 
-import cn.cpf.app.chess.res.Part;
-import cn.cpf.app.chess.res.Piece;
-import cn.cpf.app.chess.res.Place;
-import cn.cpf.app.chess.res.Role;
-import cn.cpf.app.chess.swing.JPiece;
+import cn.cpf.app.chess.algorithm.Role;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
+import cn.cpf.app.chess.modal.Place;
 
 /**
  * 棋子类
  *
- * @author cnlht
+ * @author cpf
  */
 public class ChessPiece extends JPiece {
 
@@ -23,26 +22,26 @@ public class ChessPiece extends JPiece {
 
     public ChessPiece(String name, Piece piece, Place place) {
         super(piece.image, place);
-//        super(piece, place);
         this.name = name;
         this.piece = piece;
         this.part = piece.part;
         this.role = piece.role;
     }
 
+    @Deprecated
     public int getSingleScore(Role role) {
         switch (role) {
-            case Boss:
+            case BOSS:
                 return 1000000;
-            case car:
+            case CAR:
                 return 1000;
-            case horse:
+            case HORSE:
                 return 460;
-            case cannon:
+            case CANNON:
                 return 450;
-            case soldier:
-            case elephant:
-            case Counselor:
+            case SOLDIER:
+            case ELEPHANT:
+            case COUNSELOR:
                 return 150;
             default:
                 throw new RuntimeException();

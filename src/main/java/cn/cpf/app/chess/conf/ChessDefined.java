@@ -1,4 +1,6 @@
-package cn.cpf.app.chess.res;
+package cn.cpf.app.chess.conf;
+
+import cn.cpf.app.chess.modal.Place;
 
 import java.awt.*;
 
@@ -31,7 +33,7 @@ public interface ChessDefined {
     /**
      * 棋子宽度和高度
      */
-    int PIECE_HEIGHT = PIECE_WIDTH;
+    int PIECE_HEIGHT = 56;
 
     /**
      * 棋盘 x 坐标初始位置

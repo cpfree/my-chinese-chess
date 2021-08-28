@@ -1,6 +1,10 @@
 package cn.cpf.app.chess.swing;
 
-import cn.cpf.app.chess.res.*;
+import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
+import cn.cpf.app.chess.modal.Place;
+import cn.cpf.app.chess.util.SwingUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +22,7 @@ import java.awt.*;
 public class JPiece {
 
     @Getter
-    private JLabel comp;
+    private final JLabel comp;
 
     @Getter
     private Place place;
@@ -63,23 +67,25 @@ public class JPiece {
         this.setPlace(-1, -1);
     }
 
+    /**
+     * 棋子直接移动到棋盘上 place 对应的坐标
+     */
     public void setPlace(@NonNull Place place) {
         this.place = place;
         this.setPlace(place.x, place.y);
     }
 
+    /**
+     * 棋子移动到棋盘上 place 对应的坐标(带动画)
+     */
     public void movePlace(@NonNull Place place) {
         this.place = place;
         Point toPoint = ChessDefined.convertPlaceToLocation(place.x, place.y);
-        Point fromPoint = comp.getLocation();
-        if (fromPoint == null) {
-            setPlace(place);
-        } else {
-            try {
-                SwingUtils.moveComp(comp, toPoint);
-            } catch (InterruptedException e) {
-                log.error("", e);
-            }
+        try {
+            SwingUtils.moveComp(comp, toPoint);
+        } catch (InterruptedException e) {
+            log.error("", e);
+            Thread.currentThread().interrupt();
         }
     }
 

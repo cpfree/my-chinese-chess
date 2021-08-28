@@ -1,4 +1,4 @@
-package cn.cpf.app.chess.swing;
+package cn.cpf.app.chess.util;
 
 import java.awt.*;
 
