@@ -3,7 +3,7 @@ package cn.cpf.app.chess.swing;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.conf.ChessImage;
 import cn.cpf.app.chess.ctrl.Application;
-import cn.cpf.app.chess.ctrl.ControlCenter;
+import cn.cpf.app.chess.ctrl.Situation;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Place;
@@ -28,24 +28,18 @@ import java.util.List;
 public class BoardPanel extends JPanel implements LambdaMouseListener {
 
     /**
+     * 用于标记棋盘走棋痕迹
+     */
+    private final transient TraceMarker traceMarker;
+    /**
      * 当前走棋开始坐标位置对应棋子
      */
     private transient ChessPiece curFromPiece;
 
     /**
-     * 用于标记棋盘走棋痕迹
+     * 场景
      */
-    private final transient TraceMarker traceMarker;
-
-    /**
-     * gui 落子, 面板执行落子的操作
-     */
-    public void updateMark(Place from, Place to) {
-        // 更新标记
-        curFromPiece = null;
-        // 更改标记
-        traceMarker.endedStep(from, to);
-    }
+    private Situation situation;
 
     /**
      * Create the panel.
@@ -58,13 +52,24 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     }
 
     /**
+     * gui 落子, 面板执行落子的操作
+     */
+    public void updateMark(Place from, Place to) {
+        // 更新标记
+        curFromPiece = null;
+        // 更改标记
+        traceMarker.endedStep(from, to);
+    }
+
+    /**
      * 添加棋子
      */
-    public void init(List<ChessPiece> list) {
+    public void init(Situation situation) {
+        this.situation = situation;
         // 移除所有组件
         this.removeAll();
         // 添加棋子
-        list.forEach(it -> add(it.getComp()));
+        situation.getPieceList().forEach(it -> add(it.getComp()));
         // 初始化标记符
         traceMarker.initMarker();
         // 添加鼠标事件
@@ -78,22 +83,21 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     public void mousePressed(MouseEvent e) {
         // 位置
         Place pointerPlace = ChessDefined.convertLocationToPlace(e.getPoint());
-        final ControlCenter instance = Application.instance();
         // 当前走棋方
-        @NonNull Part pointerPart = instance.getNextPart();
+        @NonNull Part pointerPart = situation.getNextPart();
         // 当前焦点棋子
-        ChessPiece pointerPiece = instance.getPiece(pointerPlace);
+        ChessPiece pointerPiece = situation.getChessPiece(pointerPlace);
 
         // 通过当前方和当前位置判断是否可以走棋
         // step: form
         if (curFromPiece == null) {
             // 当前焦点位置有棋子且是本方棋子
-            if (pointerPiece != null && pointerPiece.part == pointerPart) {
+            if (pointerPiece != null && pointerPiece.piece.part == pointerPart) {
                 // 本方棋子, 同时是from指向
-                curFromPiece = instance.getPiece(pointerPlace);
+                curFromPiece = situation.getChessPiece(pointerPlace);
                 traceMarker.setMarkFromPlace(pointerPlace);
                 // 获取toList
-                List<Place> list = curFromPiece.role.find(instance.getAnalysisBean(), pointerPart, pointerPlace);
+                List<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
                 traceMarker.showMarkPlace(list);
                 log.info("true -> 当前焦点位置有棋子且是本方棋子");
                 return;
@@ -106,18 +110,18 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             return;
         }
         // 当前焦点位置有棋子且是本方棋子
-        if (pointerPiece != null && pointerPiece.part == pointerPart) {
-            assert curFromPiece.part == pointerPart : "当前焦点位置有棋子且是本方棋子 之前指向了对方棋子";
+        if (pointerPiece != null && pointerPiece.piece.part == pointerPart) {
+            assert curFromPiece.piece.part == pointerPart : "当前焦点位置有棋子且是本方棋子 之前指向了对方棋子";
             // 更新 curFromPiece
             curFromPiece = pointerPiece;
             traceMarker.setMarkFromPlace(pointerPlace);
-            List<Place> list = curFromPiece.role.find(instance.getAnalysisBean(), pointerPart, pointerPlace);
+            List<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
             traceMarker.showMarkPlace(list);
             log.info("true -> 更新 curFromPiece");
             return;
         }
         // 如果不符合规则则直接返回
-        if (!curFromPiece.role.check(instance.getAnalysisBean(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
+        if (!curFromPiece.piece.role.check(situation.genePiece(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
             // 如果当前指向棋子是本方棋子
             log.warn("不符合走棋规则");
             return;
@@ -125,9 +129,9 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
         setEnabled(false);
         // 落子
-        Part part = instance.locatePiece(curFromPiece.getPlace(), pointerPlace);
+        Part part = Application.instance().locatePiece(curFromPiece.getPlace(), pointerPlace);
         if (part != null) {
-            JOptionPane.showMessageDialog(null,  part.name() + "胜利",  "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
         }
         setEnabled(true);
 
@@ -153,6 +157,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     public void mouseExited(MouseEvent e) {
         log.warn("false123 -> from == to");
     }
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);

@@ -1,9 +1,9 @@
 package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.algorithm.AlphaBeta;
-import cn.cpf.app.chess.algorithm.AnalysisBean;
 import cn.cpf.app.chess.conf.ChessConfig;
 import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepBean;
 import cn.cpf.app.chess.swing.BoardPanel;
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 /**
- * <b>Description : </b> 负责ui与后台数据交互
+ * <b>Description : </b> 负责ui与后台数据交互, 以及功能性控制
  * <p>
  * <b>created in </b> 2021/8/27
  *
@@ -25,45 +25,30 @@ import java.util.List;
 @Slf4j
 public class ControlCenter {
 
-    /**
-     * 棋局形势
-     */
-    private final Situation situation;
-
     private final BoardPanel boardPanel;
 
     @Getter
     private final ComRunner comRunner;
 
+    @Getter
+    private final Situation situation;
+
     ControlCenter(final BoardPanel boardPanel, final Situation situation) {
-        this.boardPanel = boardPanel;
         this.situation = situation;
+        this.boardPanel = boardPanel;
         comRunner = new ComRunner(boardPanel);
     }
 
     public void init(List<ChessPiece> list) {
-        boardPanel.init(list);
-        // 初始化棋盘
         situation.init(list);
-    }
-
-    public Part getNextPart() {
-        return situation.getNextPart();
-    }
-
-    public ChessPiece getPiece(Place place) {
-        return situation.getPiece(place);
-    }
-
-    public AnalysisBean getAnalysisBean() {
-        return new AnalysisBean(situation.getBoardPiece());
+        boardPanel.init(situation);
     }
 
     public StepBean computeStepBean() {
         long t = System.currentTimeMillis();
-        ChessPiece[][] boardPiece = situation.getBoardPiece();
-        boardPiece = ArrayUtils.deepClone(boardPiece);
-        StepBean evaluatedPlace = AlphaBeta.getEvaluatedPlace(boardPiece, situation.getNextPart(), ChessConfig.deep);
+        Piece[][] pieces = situation.genePiece();
+        pieces = ArrayUtils.deepClone(pieces);
+        StepBean evaluatedPlace = AlphaBeta.getEvaluatedPlace(pieces, situation.getNextPart(), ChessConfig.deep);
         log.info("time: {}", (System.currentTimeMillis() - t));
         return evaluatedPlace;
     }
@@ -72,11 +57,9 @@ public class ControlCenter {
      * 落子
      */
     public Part locatePiece(Place from, Place to) {
-        Part part = situation.realLocatePiece(from, to);
+        Part part = situation.movePiece(from, to);
         boardPanel.updateMark(from, to);
         return part;
     }
-
-
 
 }

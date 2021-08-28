@@ -2,9 +2,9 @@ package cn.cpf.app.chess.algorithm;
 
 import cn.cpf.app.chess.inter.Rule;
 import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.util.ArrayUtils;
-import cn.cpf.app.chess.swing.ChessPiece;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +16,7 @@ public enum Role {
      */
     BOSS(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             // 一次只能走一格
             if (1 != Math.abs(to.x - from.x) + Math.abs(to.y - from.y)) {
                 return false;
@@ -35,7 +35,7 @@ public enum Role {
 
         @Override
         public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
-            ChessPiece[][] pieces = analysisBean.chessPieces;
+            Piece[][] pieces = analysisBean.pieces;
             final int x = place.x;
             final int y = place.y;
             // TODO 待优化
@@ -86,13 +86,13 @@ public enum Role {
         }
 
         @Override
-        public int getScore(ChessPiece[][] chessPieces, Place place) {
+        public int getScore(Piece[][] chessPieces, Place place) {
             return 100;
         }
     }),
     COUNSELOR(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             // 斜着走
             if (1 != Math.abs(to.x - from.x) || 1 != Math.abs(to.y - from.y)) {
                 return false;
@@ -110,7 +110,7 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
             int x = place.x;
             int yCenter = Part.RED == part ? 8 : 1;
             if (x != 4) {
@@ -138,13 +138,13 @@ public enum Role {
         }
 
         @Override
-        public int getScore(ChessPiece[][] chessPieces, Place place) {
+        public int getScore(Piece[][] chessPieces, Place place) {
             return 100;
         }
 
     }), ELEPHANT(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             int xSub = to.x - from.x;
             int ySub = to.y - from.y;
             // 斜着走2步, 象眼处无棋子
@@ -160,7 +160,7 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
             int x = place.x;
             int y = place.y;
             int yCenter = Part.RED == part ? 7 : 2;
@@ -217,7 +217,7 @@ public enum Role {
         }
     }), CAR(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             // 直走且道路畅通
             if (to.x == from.x && to.y != from.y) {
                 return ArrayUtils.nullInMiddle(pieces[from.x], to.y, from.y);
@@ -229,12 +229,12 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
             int xInit = place.x;
             int yInit = place.y;
             List<Place> list = new ArrayList<>();
-            for (int x = xInit - 1; x >= 0 ; x--) {
-                ChessPiece chessPiece = pieces[x][yInit];
+            for (int x = xInit - 1; x >= 0; x--) {
+                Piece chessPiece = pieces[x][yInit];
                 if (chessPiece == null) {
                     list.add(Place.of(x, yInit));
                     continue;
@@ -244,8 +244,8 @@ public enum Role {
                 }
                 break;
             }
-            for (int x = xInit + 1; x < 9 ; x++) {
-                ChessPiece chessPiece = pieces[x][yInit];
+            for (int x = xInit + 1; x < 9; x++) {
+                Piece chessPiece = pieces[x][yInit];
                 if (chessPiece == null) {
                     list.add(Place.of(x, yInit));
                     continue;
@@ -255,8 +255,8 @@ public enum Role {
                 }
                 break;
             }
-            for (int y = yInit - 1; y >= 0 ; y--) {
-                ChessPiece chessPiece = pieces[xInit][y];
+            for (int y = yInit - 1; y >= 0; y--) {
+                Piece chessPiece = pieces[xInit][y];
                 if (chessPiece == null) {
                     list.add(Place.of(xInit, y));
                     continue;
@@ -266,8 +266,8 @@ public enum Role {
                 }
                 break;
             }
-            for (int y = yInit + 1; y <= 9 ; y++) {
-                ChessPiece chessPiece = pieces[xInit][y];
+            for (int y = yInit + 1; y <= 9; y++) {
+                Piece chessPiece = pieces[xInit][y];
                 if (chessPiece == null) {
                     list.add(Place.of(xInit, y));
                     continue;
@@ -281,7 +281,7 @@ public enum Role {
         }
     }), CANNON(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             if (pieces[to.x][to.y] == null) {
                 if (to.x == from.x && to.y != from.y) {
                     return ArrayUtils.nullInMiddle(pieces[from.x], to.y, from.y);
@@ -301,13 +301,13 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
             int xInit = place.x;
             int yInit = place.y;
             List<Place> list = new ArrayList<>();
             boolean kong = false;
-            for (int x = xInit - 1; x >= 0 ; x--) {
-                ChessPiece chessPiece = pieces[x][yInit];
+            for (int x = xInit - 1; x >= 0; x--) {
+                Piece chessPiece = pieces[x][yInit];
                 if (kong) {
                     if (chessPiece == null) {
                         continue;
@@ -326,8 +326,8 @@ public enum Role {
                 }
             }
             kong = false;
-            for (int x = xInit + 1; x < 9 ; x++) {
-                ChessPiece chessPiece = pieces[x][yInit];
+            for (int x = xInit + 1; x < 9; x++) {
+                Piece chessPiece = pieces[x][yInit];
                 if (kong) {
                     if (chessPiece == null) {
                         continue;
@@ -346,8 +346,8 @@ public enum Role {
                 }
             }
             kong = false;
-            for (int y = yInit - 1; y >= 0 ; y--) {
-                ChessPiece chessPiece = pieces[xInit][y];
+            for (int y = yInit - 1; y >= 0; y--) {
+                Piece chessPiece = pieces[xInit][y];
                 if (kong) {
                     if (chessPiece == null) {
                         continue;
@@ -366,8 +366,8 @@ public enum Role {
                 }
             }
             kong = false;
-            for (int y = yInit + 1; y < 10 ; y++) {
-                ChessPiece chessPiece = pieces[xInit][y];
+            for (int y = yInit + 1; y < 10; y++) {
+                Piece chessPiece = pieces[xInit][y];
                 if (kong) {
                     if (chessPiece == null) {
                         continue;
@@ -389,7 +389,7 @@ public enum Role {
         }
     }), HORSE(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             // 斜着走2步
             int xSub = to.x - from.x;
             int ySub = to.y - from.y;
@@ -404,7 +404,7 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
             int xInit = place.x;
             int yInit = place.y;
             List<Place> list = new ArrayList<>(8);
@@ -444,7 +444,7 @@ public enum Role {
         }
     }), SOLDIER(new Rule() {
         @Override
-        public boolean check(ChessPiece[][] pieces, Part part, Place from, Place to) {
+        public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
             // 一次只能走一格
             if (1 != Math.abs(to.x - from.x) + Math.abs(to.y - from.y)) {
                 return false;
@@ -467,7 +467,7 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(ChessPiece[][] pieces, Part part, Place place) {
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
             int xInit = place.x;
             int yInit = place.y;
             List<Place> list = new ArrayList<>(3);
@@ -508,17 +508,18 @@ public enum Role {
         this.rule = rule;
     }
 
-    public boolean check(AnalysisBean analysisBean, Part part, Place from, Place to) {
+    public boolean check(Piece[][] piece, Part part, Place from, Place to) {
+        final AnalysisBean analysisBean = new AnalysisBean(piece);
         if (this == Role.BOSS) {
             if (analysisBean.bossF2fAfterBossMove(part, to)) {
                 return false;
             }
-            return rule.check(analysisBean.chessPieces, part, from, to);
+            return rule.check(analysisBean.pieces, part, from, to);
         } else {
             if (to.x != from.x && analysisBean.bossF2fAfterLeave(from)) {
                 return false;
             }
-            return rule.check(analysisBean.chessPieces, part, from, to);
+            return rule.check(analysisBean.pieces, part, from, to);
         }
     }
 
@@ -527,12 +528,17 @@ public enum Role {
         if (this == Role.BOSS) {
             return rule.find(analysisBean, part, place);
         } else {
-            List<Place> places = rule.find(analysisBean.chessPieces, part, place);
+            List<Place> places = rule.find(analysisBean.pieces, part, place);
             if (analysisBean.bossF2fAfterLeave(place)) {
                 return analysisBean.filterPlace(places);
             }
             return places;
         }
+    }
+
+    public List<Place> find(Piece[][] piece, Part part, Place place) {
+        final AnalysisBean analysisBean = new AnalysisBean(piece);
+        return find(analysisBean, part, place);
     }
 
 }

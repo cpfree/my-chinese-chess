@@ -1,7 +1,10 @@
 package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.conf.ChessConfig;
-import cn.cpf.app.chess.swing.*;
+import cn.cpf.app.chess.swing.BoardPanel;
+import cn.cpf.app.chess.swing.ChessFrame;
+import cn.cpf.app.chess.swing.ChessPanel;
+import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -9,7 +12,7 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * <b>Description : </b>
+ * <b>Description : </b> 象棋引用启动类
  * <p>
  * <b>created in </b> 2021/8/28
  * </p>

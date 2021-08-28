@@ -23,6 +23,8 @@ import javax.swing.*;
 @Slf4j
 public class ComRunner {
 
+    private final BoardPanel boardPanel;
+    private final CtrlLoopThreadComp comRunThread;
     /**
      * com 是否可运行标记, 如果
      */
@@ -33,10 +35,6 @@ public class ComRunner {
      */
     @Getter
     private int forceRunTime;
-
-    private final BoardPanel boardPanel;
-
-    private final CtrlLoopThreadComp comRunThread;
 
     public ComRunner(BoardPanel boardPanel) {
         this.boardPanel = boardPanel;
@@ -89,18 +87,18 @@ public class ComRunner {
         log.info("com run start");
         while (forceRunTime > 0 || comRunnable) {
             if (forceRunTime > 0) {
-                forceRunTime --;
+                forceRunTime--;
             }
             try {
                 final ControlCenter instance = Application.instance();
                 // 若当前执棋手是 COM
-                if (PlayerType.COM.equals(ChessConfig.getPlayerType(instance.getNextPart()))) {
+                if (PlayerType.COM.equals(ChessConfig.getPlayerType(instance.getSituation().getNextPart()))) {
                     StepBean evaluatedPlace = instance.computeStepBean();
                     Part part = instance.locatePiece(evaluatedPlace.from, evaluatedPlace.to);
                     // 落子
                     // 判断是否结束
                     if (part != null) {
-                        JOptionPane.showMessageDialog(null,  part.name() + "胜利",  "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
                         comRunnable = false;
                     }
                 } else {
@@ -108,9 +106,7 @@ public class ComRunner {
                 }
             } catch (Exception e) {
                 log.error("", e);
-                new Thread(() -> {
-                    JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE);
-                }).start();
+                new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
                 // 暂停COM
                 comRunnable = false;
             }

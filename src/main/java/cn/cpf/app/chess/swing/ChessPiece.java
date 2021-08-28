@@ -1,7 +1,6 @@
 package cn.cpf.app.chess.swing;
 
 import cn.cpf.app.chess.algorithm.Role;
-import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 
@@ -14,18 +13,12 @@ public class ChessPiece extends JPiece {
 
     public final String name;
 
-    public final Part part;
-
-    public final Role role;
-
     public final Piece piece;
 
     public ChessPiece(String name, Piece piece, Place place) {
         super(piece.image, place);
         this.name = name;
         this.piece = piece;
-        this.part = piece.part;
-        this.role = piece.role;
     }
 
     @Deprecated

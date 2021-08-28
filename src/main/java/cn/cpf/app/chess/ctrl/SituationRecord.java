@@ -1,9 +1,9 @@
 package cn.cpf.app.chess.ctrl;
 
-import cn.cpf.app.chess.modal.StepRecord;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
+import cn.cpf.app.chess.modal.StepRecord;
 import lombok.Getter;
 import lombok.NonNull;
 

@@ -10,7 +10,8 @@ public class ChessPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     @Getter
-    private JPanel boardPanel;
+    private final JPanel boardPanel;
+
     /**
      * Create the panel.
      */

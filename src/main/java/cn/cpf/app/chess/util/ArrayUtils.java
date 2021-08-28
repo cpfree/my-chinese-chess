@@ -8,7 +8,8 @@ package cn.cpf.app.chess.util;
  */
 public class ArrayUtils {
 
-    private ArrayUtils(){}
+    private ArrayUtils() {
+    }
 
     /**
      * 在 arr[] 中, 从 from 到 to 的位置中间, 是否没有对象
@@ -91,6 +92,7 @@ public class ArrayUtils {
 
     /**
      * 在 arr[] 中, 从 arr[from] 到 arr[to] 的位置中间, 有多少对象
+     *
      * @return 从 arr[from] 到 arr[to] 的位置中间的对象数
      */
     public static int numberInMiddle(final Object[] arr, int from, int to) {
@@ -108,6 +110,7 @@ public class ArrayUtils {
 
     /**
      * 在 arr[][] 中, 从 arr[from][y] 到 arr[to][y] 的位置中间, 有多少对象
+     *
      * @return 从 arr[from][y] 到 arr[to][y] 的位置中间的对象数
      */
     public static int numberInMiddle(final Object[][] arr, int y, int from, int to) {
@@ -126,10 +129,10 @@ public class ArrayUtils {
     /**
      * 二维数组深拷贝
      */
-    public static <T> T[][] deepClone(final T[][] matrix){
+    public static <T> T[][] deepClone(final T[][] matrix) {
         int len = matrix.length;
         T[][] arr = matrix.clone();
-        for (int i = 0; i<len;i ++){
+        for (int i = 0; i < len; i++) {
             arr[i] = matrix[i].clone();
         }
         return arr;

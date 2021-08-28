@@ -1,24 +1,26 @@
 package cn.cpf.app.chess.algorithm;
 
-import cn.cpf.app.chess.swing.ChessPiece;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
 
 public class BoardEvaluate {
 
-    private BoardEvaluate(){}
+    private BoardEvaluate() {
+    }
 
-	/**
-	 * 返回对本方的实力评估, 本方为正
-	 * @param chessPieces
+    /**
+     * 返回对本方的实力评估, 本方为正
+     *
+     * @param chessPieces
      * @param curPart
      * @return
-	 */
-	public static int getCurPartEvaluateScore(ChessPiece[][] chessPieces, Part curPart) {
+     */
+    public static int getCurPartEvaluateScore(Piece[][] chessPieces, Part curPart) {
         int num = 0;
         for (int x = 0; x < ChessDefined.RANGE_X; x++) {
             for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
-                ChessPiece piece = chessPieces[x][y];
+                Piece piece = chessPieces[x][y];
                 if (piece == null) {
                     continue;
                 }
@@ -33,7 +35,7 @@ public class BoardEvaluate {
     }
 
 
-    public static int getSingleScore(ChessPiece[][] chessPieces, Role role, int x, int y) {
+    public static int getSingleScore(Piece[][] pieces, Role role, int x, int y) {
         switch (role) {
             case BOSS:
                 return 1000000;

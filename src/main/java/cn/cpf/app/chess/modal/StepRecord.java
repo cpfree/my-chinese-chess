@@ -15,6 +15,19 @@ import java.util.Date;
 @Getter
 public class StepRecord {
 
+    /**
+     * 走棋方
+     */
+    private final Part part;
+    private final int step;
+    /**
+     * 移动棋子
+     */
+    private final Piece piece;
+    private final Place from;
+    private final Place to;
+    private final Date date;
+    private final Piece eatenPiece;
     public StepRecord(Part part, int step, Piece piece, Place from, Place to, Piece eatenPiece) {
         this.part = part;
         this.step = step;
@@ -24,19 +37,4 @@ public class StepRecord {
         this.eatenPiece = eatenPiece;
         this.date = new Date();
     }
-
-    /**
-     * 走棋方
-     */
-    private final Part part;
-    private final int step;
-
-    /**
-     * 移动棋子
-     */
-    private final Piece piece;
-    private final Place from;
-    private final Place to;
-    private final Date date;
-    private final Piece eatenPiece;
 }

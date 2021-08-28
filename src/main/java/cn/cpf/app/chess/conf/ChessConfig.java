@@ -1,11 +1,11 @@
 package cn.cpf.app.chess.conf;
 
-import cn.cpf.app.chess.swing.ChessPiece;
 import cn.cpf.app.chess.ctrl.Situation;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.PlayerType;
+import cn.cpf.app.chess.swing.ChessPiece;
 import com.google.gson.Gson;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -34,12 +34,9 @@ public class ChessConfig {
     public static final PlayerType RedPlayer = PlayerType.COM;
 
     public static final PlayerType BlackPlayer = PlayerType.COM;
-
-    public static int deep = 6;
-
     public static final int sha = 0;
-
     public static final int INTERVAL_TIME = 600;
+    public static int deep = 6;
 
     public static PlayerType getPlayerType(@NonNull Part part) {
         if (part == Part.RED) {
@@ -50,7 +47,7 @@ public class ChessConfig {
     }
 
     public static void saveSituation(Situation situation) throws IOException {
-        String fileName = String.format("situation-%s-%s-%s", appStartTime, situation.situationStartTime, LocalDateTime.now());
+        String fileName = String.format("situation-%s-%s-%s", appStartTime, situation.getSituationStartTime(), LocalDateTime.now());
         String filePath = ChessConfig.class.getResource("/").getPath();
         File file = new File(filePath + File.separator + fileName);
         assert !file.exists() : "文件已存在";

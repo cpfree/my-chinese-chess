@@ -48,7 +48,7 @@ public enum ChessImage {
 
     /**
      * 转换图片颜色
-     *
+     * <p>
      * 参考自: https://www.kutu66.com//Java_API_Classes/article_66492
      */
     private static Image makeColorTransparent(Image image) {

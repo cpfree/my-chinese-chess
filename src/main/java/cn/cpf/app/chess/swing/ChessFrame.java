@@ -14,24 +14,24 @@ import javax.swing.*;
  **/
 public class ChessFrame extends JFrame {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * Create the frame.
-	 */
-	public ChessFrame() {
-		setTitle("my chess");
-		setVisible(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(400, 100, ChessDefined.boardRect.width, ChessDefined.boardRect.height);
-		// 添加菜单
-		ChessMenuBar menuBar = new ChessMenuBar();
-		menuBar.setVisible(true);
-		setJMenuBar(menuBar);
-		// 添加面板
-		JPanel contentPane = new ChessPanel();
-		contentPane.setVisible(true);
-		setContentPane(contentPane);
-	}
+    /**
+     * Create the frame.
+     */
+    public ChessFrame() {
+        setTitle("my chess");
+        setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(400, 100, ChessDefined.boardRect.width, ChessDefined.boardRect.height);
+        // 添加菜单
+        ChessMenuBar menuBar = new ChessMenuBar();
+        menuBar.setVisible(true);
+        setJMenuBar(menuBar);
+        // 添加面板
+        JPanel contentPane = new ChessPanel();
+        contentPane.setVisible(true);
+        setContentPane(contentPane);
+    }
 
 }
