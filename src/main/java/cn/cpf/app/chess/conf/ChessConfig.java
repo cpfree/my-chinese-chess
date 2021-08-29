@@ -29,20 +29,29 @@ public class ChessConfig {
 
     public static final LocalDateTime appStartTime = LocalDateTime.now();
 
+    /**
+     * 先手方
+     */
     public static final Part firstPart = Part.RED;
 
-    public static final PlayerType RedPlayer = PlayerType.COM;
+    public static PlayerType redPlayerType = PlayerType.PEOPLE;
 
-    public static final PlayerType BlackPlayer = PlayerType.COM;
+    public static PlayerType blackPlayerType = PlayerType.COM;
+
     public static final int sha = 0;
+
     public static final int INTERVAL_TIME = 600;
+
     public static int deep = 6;
 
+    /**
+     * 判断 part 方的 playType
+     */
     public static PlayerType getPlayerType(@NonNull Part part) {
         if (part == Part.RED) {
-            return RedPlayer;
+            return redPlayerType;
         } else {
-            return BlackPlayer;
+            return blackPlayerType;
         }
     }
 

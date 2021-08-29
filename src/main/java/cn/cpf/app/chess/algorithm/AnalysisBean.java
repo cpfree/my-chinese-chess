@@ -52,12 +52,15 @@ public class AnalysisBean {
     }
 
 
+    /**
+     * 模拟走棋
+     */
     public void goForward(Place from, Place to, Piece eatenPiece) {
         final Piece movePiece = pieces[from.x][from.y];
         pieces[to.x][to.y] = movePiece;
         pieces[from.x][from.y] = null;
         if (movePiece.role == Role.BOSS) {
-            updatePlace(movePiece.part, to);
+            updateBossPlace(movePiece.part, to);
         }
         if (eatenPiece != null) {
             if (eatenPiece.part == Part.RED) {
@@ -68,13 +71,16 @@ public class AnalysisBean {
         }
     }
 
+    /**
+     * 模拟后退
+     */
     public void backStep(Place from, Place to, Piece eatenPiece) {
         final Piece movePiece = pieces[to.x][to.y];
         pieces[from.x][from.y] = movePiece;
         pieces[to.x][to.y] = eatenPiece;
         // 退回上一步
         if (movePiece.role == Role.BOSS) {
-            updatePlace(movePiece.part, from);
+            updateBossPlace(movePiece.part, from);
         }
         if (eatenPiece != null) {
             if (eatenPiece.part == Part.RED) {
@@ -151,24 +157,37 @@ public class AnalysisBean {
             case COUNSELOR:
                 return 150;
             default:
-                throw new RuntimeException();
+                throw new IllegalArgumentException();
         }
     }
 
+    /**
+     * 返回棋盘上某一方的棋子
+     */
     public int getPieceNum(Part curPart) {
         return curPart == Part.RED ? redPieceNum : blackPieceNum;
     }
 
+    /**
+     * @return 棋盘还有多少棋子
+     */
     public int getPieceNum() {
         return redPieceNum + blackPieceNum;
     }
 
 
-    public Place getOppoPlace(Part curPart) {
+    /**
+     * 获取对方Boss的位置
+     */
+    public Place getOppoBossPlace(Part curPart) {
         return curPart == Part.RED ? blackBoss : redBoss;
     }
 
-    public void updatePlace(Part part, Place newPlace) {
+    /**
+     * @param part 更新 Boss 棋子的位置
+     * @param newPlace 新位置
+     */
+    public void updateBossPlace(Part part, Place newPlace) {
         if (part == Part.RED) {
             redBoss = newPlace;
         } else {

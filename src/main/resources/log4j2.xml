@@ -11,7 +11,7 @@
         <Console name="console_out_appender" target="SYSTEM_OUT">
             <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" />
             <!-- 输出日志的格式 -->
-            <PatternLayout pattern="[%p] [chess] %d{yyyy-MM-dd HH:mm:ss} (%F:%L) %m%n" />
+            <PatternLayout pattern="[%p] %d{HH:mm:ss} (%C:%L -> %M) %m%n" />
         </Console>
     </Appenders>
 

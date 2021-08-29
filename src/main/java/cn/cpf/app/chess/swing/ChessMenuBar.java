@@ -3,6 +3,7 @@ package cn.cpf.app.chess.swing;
 import cn.cpf.app.chess.conf.ChessConfig;
 import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
+import cn.cpf.app.chess.modal.PlayerType;
 import lombok.NonNull;
 
 import javax.swing.*;
@@ -43,6 +44,18 @@ public class ChessMenuBar extends JMenuBar {
     private void addDebugMenu() {
         JMenu muDebug = new JMenu("Debug");
         add(muDebug);
+        addItemToMenu(muDebug, "人机对弈", e -> {
+            ChessConfig.blackPlayerType = PlayerType.COM;
+            ChessConfig.redPlayerType = PlayerType.PEOPLE;
+        });
+        addItemToMenu(muDebug, "机机对弈", e -> {
+            ChessConfig.blackPlayerType = PlayerType.COM;
+            ChessConfig.redPlayerType = PlayerType.COM;
+        });
+        addItemToMenu(muDebug, "人人对弈", e -> {
+            ChessConfig.blackPlayerType = PlayerType.PEOPLE;
+            ChessConfig.redPlayerType = PlayerType.PEOPLE;
+        });
         addItemToMenu(muDebug, "COM 运行一次", e -> Application.instance().getComRunner().runOneTime());
         addItemToMenu(muDebug, "COM 运行", e -> Application.instance().getComRunner().runEnable());
         addItemToMenu(muDebug, "COM runIfEnable", e -> Application.instance().getComRunner().runIfEnable());

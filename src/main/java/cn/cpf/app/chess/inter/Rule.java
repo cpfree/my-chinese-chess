@@ -1,6 +1,5 @@
 package cn.cpf.app.chess.inter;
 
-import cn.cpf.app.chess.algorithm.AnalysisBean;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
@@ -42,13 +41,7 @@ public interface Rule {
      * @param place  当前棋子在棋盘坐标位置
      * @return 当前棋子所有的走位集合
      */
-    default List<Place> find(Piece[][] pieces, Part part, Place place) {
-        throw new RuntimeException();
-    }
-
-    default List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
-        throw new RuntimeException();
-    }
+    List<Place> find(Piece[][] pieces, Part part, Place place);
 
     default int checkPlace(Piece chessPiece, Part part) {
         if (chessPiece == null) {

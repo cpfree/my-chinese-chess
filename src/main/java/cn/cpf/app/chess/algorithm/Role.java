@@ -34,14 +34,14 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
-            Piece[][] pieces = analysisBean.pieces;
+        public List<Place> find(Piece[][] pieces, Part part, Place place) {
+            AnalysisBean analysisBean = new AnalysisBean(pieces);
             final int x = place.x;
             final int y = place.y;
             // TODO 待优化
             List<Place> list = new ArrayList<>(4);
             // x轴移动
-            Place oppoBossPlace = analysisBean.getOppoPlace(part);
+            Place oppoBossPlace = analysisBean.getOppoBossPlace(part);
             if (x == 4) {
                 // 对方boss x坐标为3, 且移动后双 boss 不会对面
                 if (checkPlace(pieces[3][y], part) >= 0 && !(oppoBossPlace.x == 3 && analysisBean.bossF2fAfterBossMove(part, Place.of(3, y)))) {
@@ -102,7 +102,6 @@ public enum Role {
                 return false;
             }
             if (part == Part.RED) {
-                // && to.y < 9;
                 return to.y >= 7;
             } else {
                 return to.y <= 2;
@@ -526,7 +525,7 @@ public enum Role {
 
     public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
         if (this == Role.BOSS) {
-            return rule.find(analysisBean, part, place);
+            return rule.find(analysisBean.pieces, part, place);
         } else {
             List<Place> places = rule.find(analysisBean.pieces, part, place);
             if (analysisBean.bossF2fAfterLeave(place)) {

@@ -98,17 +98,17 @@ public class ComRunner {
                     // 落子
                     // 判断是否结束
                     if (part != null) {
-                        JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
                         comRunnable = false;
+                        log.info("游戏结束 = COM 暂停 ==> {} 胜利", part.name());
                     }
                 } else {
                     break;
                 }
             } catch (Exception e) {
-                log.error("", e);
-                new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
-                // 暂停COM
                 comRunnable = false;
+                log.error("出现异常 = COM 暂停", e);
+                new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
             }
         }
         log.info("com run stop");

@@ -10,11 +10,12 @@ public class StepBean {
 
     public final Place from;
     public final Place to;
-    public int score;
+    public final int score;
 
     public StepBean(Place from, Place to) {
         this.from = from;
         this.to = to;
+        this.score = 0;
     }
 
     public StepBean(Place from, Place to, int score) {

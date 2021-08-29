@@ -3,6 +3,7 @@ package cn.cpf.app.chess.algorithm;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
+import com.github.cosycode.common.lang.ShouldNotHappenException;
 
 public class BoardEvaluate {
 
@@ -50,7 +51,7 @@ public class BoardEvaluate {
             case COUNSELOR:
                 return 150;
             default:
-                throw new RuntimeException();
+                throw new ShouldNotHappenException();
         }
     }
 

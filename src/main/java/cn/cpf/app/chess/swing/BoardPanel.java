@@ -39,7 +39,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     /**
      * 场景
      */
-    private Situation situation;
+    private transient Situation situation;
 
     /**
      * Create the panel.
@@ -139,26 +139,6 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-        log.warn("false22 -> from == to");
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        log.warn("false21 -> from == to");
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        log.warn("false12 -> from == to");
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        log.warn("false123 -> from == to");
-    }
-
-    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Image img = ChessImage.CHESS_BOARD.getImage();
@@ -169,7 +149,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         int x = (fWidth - imgWidth) / 2;
         int y = (fHeight - imgHeight) / 2;
         // 520 576 514 567
-        log.info(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
+        log.debug(String.format("%s,%s,%s,%s,%s,%s", imgWidth, imgHeight, fWidth, fHeight, x, y));
         g.drawImage(img, 0, 0, null);
     }
 

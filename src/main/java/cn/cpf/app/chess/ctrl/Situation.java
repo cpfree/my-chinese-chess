@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +39,7 @@ public class Situation {
     /**
      * 被吃的棋子列表
      */
+    @Getter
     private List<ChessPiece> eatenPieceList;
     /**
      * 棋子数组
@@ -48,14 +48,18 @@ public class Situation {
     /**
      * 红方boss, 单独标出
      */
+    @Getter
     private ChessPiece redBoss;
     /**
      * 黑方boss, 单独标出
      */
+    @Getter
     private ChessPiece blackBoss;
 
+    @Getter
     private int redPieceNum;
 
+    @Getter
     private int blackPieceNum;
     /**
      * 下棋记录
