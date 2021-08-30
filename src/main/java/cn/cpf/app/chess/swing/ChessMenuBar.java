@@ -56,10 +56,9 @@ public class ChessMenuBar extends JMenuBar {
             ChessConfig.blackPlayerType = PlayerType.PEOPLE;
             ChessConfig.redPlayerType = PlayerType.PEOPLE;
         });
-        addItemToMenu(muDebug, "COM 运行一次", e -> Application.instance().getComRunner().runOneTime());
+        addItemToMenu(muDebug, "AI计算一次", e -> Application.instance().getComRunner().runOneTime());
         addItemToMenu(muDebug, "COM 运行", e -> Application.instance().getComRunner().runEnable());
-        addItemToMenu(muDebug, "COM runIfEnable", e -> Application.instance().getComRunner().runIfEnable());
-        addItemToMenu(muDebug, "COM disable", e -> Application.instance().getComRunner().stopRun());
+        addItemToMenu(muDebug, "AI停止计算(计算完这一次)", e -> Application.instance().getComRunner().stopRun());
     }
 
     private void addUserMenu() {

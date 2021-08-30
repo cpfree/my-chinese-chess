@@ -41,10 +41,6 @@ class TraceMarker {
         lastMarkTo = new JPiece(ChessImage.POINTER.getImage());
         markFrom = new JPiece(ChessImage.POINTER.getImage());
         pointerMark = new JPiece(ChessImage.POINTER.getImage());
-        container.add(pointerMark.getComp());
-        container.add(markFrom.getComp());
-        container.add(lastMarkFrom.getComp());
-        container.add(lastMarkTo.getComp());
         toMarkList = new ArrayList<>();
     }
 
@@ -52,10 +48,14 @@ class TraceMarker {
      * 初始化所有标记
      */
     void initMarker() {
-        lastMarkFrom.setVisible(false);
-        lastMarkTo.setVisible(false);
-        pointerMark.setVisible(false);
-        markFrom.setVisible(false);
+        container.add(pointerMark.getComp());
+        container.add(markFrom.getComp());
+        container.add(lastMarkFrom.getComp());
+        container.add(lastMarkTo.getComp());
+        lastMarkFrom.hide();
+        lastMarkTo.hide();
+        pointerMark.hide();
+        markFrom.hide();
         showMarkPlace(null);
     }
 
@@ -69,8 +69,8 @@ class TraceMarker {
     void endedStep(Place from, Place to) {
         lastMarkFrom.setPlaceAndShow(from);
         lastMarkTo.setPlaceAndShow(to);
-        pointerMark.setVisible(false);
-        markFrom.setVisible(false);
+        pointerMark.hide();
+        markFrom.hide();
         showMarkPlace(null);
     }
 

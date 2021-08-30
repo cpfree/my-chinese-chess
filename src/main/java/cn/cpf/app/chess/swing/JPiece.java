@@ -7,6 +7,7 @@ import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.util.SwingUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -19,6 +20,7 @@ import java.awt.*;
  * Date: 2020/3/18 14:39
  */
 @Slf4j
+@ToString
 public class JPiece {
 
     @Getter
@@ -58,21 +60,26 @@ public class JPiece {
         }
     }
 
-    private void setPlace(int x, int y) {
-        comp.setLocation(ChessDefined.convertPlaceToLocation(x, y));
-    }
-
-    public void hide() {
-        this.setVisible(false);
-        this.setPlace(-1, -1);
-    }
-
     /**
      * 棋子直接移动到棋盘上 place 对应的坐标
      */
     public void setPlace(@NonNull Place place) {
         this.place = place;
-        this.setPlace(place.x, place.y);
+        comp.setLocation(ChessDefined.convertPlaceToLocation(place.x, place.y));
+    }
+
+    public void setVisible(boolean visible) {
+        comp.setVisible(visible);
+    }
+
+    public void hide() {
+        this.setVisible(false);
+        this.setPlace(Place.NULL_PLACE);
+    }
+
+    public void setPlaceAndShow(Place place) {
+        this.setPlace(place);
+        this.setVisible(true);
     }
 
     /**
@@ -87,15 +94,6 @@ public class JPiece {
             log.error("", e);
             Thread.currentThread().interrupt();
         }
-    }
-
-    public void setPlaceAndShow(Place place) {
-        this.setPlace(place);
-        this.setVisible(true);
-    }
-
-    public void setVisible(boolean visible) {
-        comp.setVisible(visible);
     }
 
 }

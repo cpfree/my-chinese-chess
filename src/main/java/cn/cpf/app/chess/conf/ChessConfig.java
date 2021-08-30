@@ -55,6 +55,12 @@ public class ChessConfig {
         }
     }
 
+    /**
+     * 将当前场景存放至文件
+     *
+     * @param situation 场景对象
+     * @throws IOException 写入失败
+     */
     public static void saveSituation(Situation situation) throws IOException {
         String fileName = String.format("situation-%s-%s-%s", appStartTime, situation.getSituationStartTime(), LocalDateTime.now());
         String filePath = ChessConfig.class.getResource("/").getPath();
@@ -66,6 +72,11 @@ public class ChessConfig {
         }
     }
 
+    /**
+     * 获取默认的一套棋盘棋子配置
+     *
+     * @return
+     */
     public static List<ChessPiece> geneDefaultPieceSituation() {
         List<ChessPiece> list = new ArrayList<>(32);
         // 添加红色棋子
@@ -73,7 +84,7 @@ public class ChessConfig {
         list.add(new ChessPiece("1", Piece.RED_HORSE, Place.of(1, 9)));
         list.add(new ChessPiece("1", Piece.RED_ELEPHANT, Place.of(2, 9)));
         list.add(new ChessPiece("1", Piece.RED_COUNSELOR, Place.of(3, 9)));
-        list.add(new ChessPiece("", Piece.RED_BOSS, Place.of(4, 9)));
+        list.add(new ChessPiece("0", Piece.RED_BOSS, Place.of(4, 9)));
         list.add(new ChessPiece("2", Piece.RED_COUNSELOR, Place.of(5, 9)));
         list.add(new ChessPiece("2", Piece.RED_ELEPHANT, Place.of(6, 9)));
         list.add(new ChessPiece("2", Piece.RED_HORSE, Place.of(7, 9)));
@@ -92,7 +103,7 @@ public class ChessConfig {
         list.add(new ChessPiece("1", Piece.BLACK_HORSE, Place.of(1, 0)));
         list.add(new ChessPiece("1", Piece.BLACK_ELEPHANT, Place.of(2, 0)));
         list.add(new ChessPiece("1", Piece.BLACK_COUNSELOR, Place.of(3, 0)));
-        list.add(new ChessPiece("", Piece.BLACK_BOSS, Place.of(4, 0)));
+        list.add(new ChessPiece("0", Piece.BLACK_BOSS, Place.of(4, 0)));
         list.add(new ChessPiece("2", Piece.BLACK_COUNSELOR, Place.of(5, 0)));
         list.add(new ChessPiece("2", Piece.BLACK_ELEPHANT, Place.of(6, 0)));
         list.add(new ChessPiece("2", Piece.BLACK_HORSE, Place.of(7, 0)));

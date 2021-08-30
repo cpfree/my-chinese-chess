@@ -135,7 +135,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         }
         setEnabled(true);
 
-        Application.instance().getComRunner().runIfEnable();
+        Application.instance().getComRunner().runOneTime();
     }
 
     @Override

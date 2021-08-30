@@ -45,7 +45,7 @@ public class ComRunner {
     }
 
     /**
-     * 运行一次
+     * 运行一次, 无论下一步棋手类型是COM还是人类
      */
     public void runOneTime() {
         comRunnable = false;
@@ -54,7 +54,7 @@ public class ComRunner {
     }
 
     /**
-     * 运行多次
+     * 连续运行
      */
     public void runEnable() {
         comRunnable = true;
@@ -85,32 +85,34 @@ public class ComRunner {
      */
     private void loop() {
         log.info("com run start");
-        while (forceRunTime > 0 || comRunnable) {
-            if (forceRunTime > 0) {
-                forceRunTime--;
-            }
-            try {
-                final ControlCenter instance = Application.instance();
-                // 若当前执棋手是 COM
-                if (PlayerType.COM.equals(ChessConfig.getPlayerType(instance.getSituation().getNextPart()))) {
-                    StepBean evaluatedPlace = instance.computeStepBean();
-                    Part part = instance.locatePiece(evaluatedPlace.from, evaluatedPlace.to);
-                    // 落子
-                    // 判断是否结束
-                    if (part != null) {
-                        JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
-                        comRunnable = false;
-                        log.info("游戏结束 = COM 暂停 ==> {} 胜利", part.name());
-                    }
-                } else {
-                    break;
-                }
-            } catch (Exception e) {
-                comRunnable = false;
-                log.error("出现异常 = COM 暂停", e);
-                new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
-            }
+        if (forceRunTime > 0) {
+            forceRunTime--;
         }
+        if (forceRunTime <= 0 && !comRunnable) {
+            stopRun();
+        }
+        final ControlCenter instance = Application.instance();
+        try {
+            StepBean evaluatedPlace = instance.computeStepBean();
+            Part part = instance.locatePiece(evaluatedPlace.from, evaluatedPlace.to);
+            // 落子
+            // 判断是否结束
+            if (part != null) {
+                JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
+                stopRun();
+                log.info("游戏结束 = COM 暂停 ==> {} 胜利", part.name());
+            }
+        } catch (Exception e) {
+            stopRun();
+            log.error("出现异常 = COM 暂停", e);
+            new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
+        }
+        // 如果下一步棋手不是 AI, 则暂停
+        if (!PlayerType.COM.equals(ChessConfig.getPlayerType(instance.getSituation().getNextPart()))) {
+            stopRun();
+            return;
+        }
+
         log.info("com run stop");
     }
 

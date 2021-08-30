@@ -66,13 +66,12 @@ public class AlphaBeta {
 
         // 根据棋子数量, 动态调整搜索深度
         int pieceNum = analysisBean.getPieceNum();
-        if (pieceNum > 24) {
+        if (pieceNum > 20) {
             deep -= 2;
-        } else if (pieceNum > 16) {
-        } else if (pieceNum > 8) {
-            deep += 2;
-        } else if (pieceNum > 4) {
+        } else if (pieceNum <= 4) {
             deep += 4;
+        } else if (pieceNum <= 8) {
+            deep += 2;
         }
 
         // list 排序
