@@ -1,6 +1,8 @@
 package cn.cpf.app.chess.ctrl;
 
-import cn.cpf.app.chess.conf.ChessConfig;
+import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.PlayerType;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessFrame;
 import cn.cpf.app.chess.swing.ChessPanel;
@@ -23,10 +25,15 @@ import java.util.List;
 @Slf4j
 public class Application {
 
-    private static ControlCenter controlCenter;
+    private static AppContext appContext;
+    private static AppConfig config;
 
-    public static ControlCenter instance() {
-        return controlCenter;
+    public static AppConfig config() {
+        return config;
+    }
+
+    public static AppContext context() {
+        return appContext;
     }
 
     /**
@@ -37,12 +44,19 @@ public class Application {
             try {
                 JFrame frame = new ChessFrame();
                 frame.setVisible(true);
+                config = new AppConfig();
+                config.setFirstPart(Part.RED);
+                config.setBlackPlayerType(PlayerType.COM);
+                config.setRedPlayerType(PlayerType.PEOPLE);
+                config.setComIntervalTime(500);
+                config.setSearchDeepLevel(4);
+                config.setSearchKillStepDeepLevel(2);
                 // 获取配置棋子
                 BoardPanel boardPanel = (BoardPanel) ((ChessPanel) frame.getContentPane()).getBoardPanel();
                 Situation situation = new Situation();
-                controlCenter = new ControlCenter(boardPanel, situation);
-                List<ChessPiece> list = ChessConfig.geneDefaultPieceSituation();
-                controlCenter.init(list);
+                appContext = new AppContext(boardPanel, situation);
+                List<ChessPiece> list = ChessDefined.geneDefaultPieceSituation();
+                appContext.init(list);
             } catch (Exception e) {
                 log.error("", e);
             }

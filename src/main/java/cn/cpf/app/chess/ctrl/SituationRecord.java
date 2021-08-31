@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.List;
 
 /**
@@ -21,6 +22,7 @@ public class SituationRecord {
     /**
      * 历史记录
      */
+    @Getter
     private final List<StepRecord> list = new ArrayList<>();
     /**
      * 黑棋当前走的步数
@@ -42,8 +44,20 @@ public class SituationRecord {
         list.add(new StepRecord(part, list.size() + 1, piece, from, to, eatenPiece));
     }
 
+    /**
+     * 弹出最新记录对象, 若列表中无元素, 则抛出异常
+     */
+    StepRecord popRecord() {
+        if (list.isEmpty()) {
+            throw new EmptyStackException();
+        }
+        return list.remove(list.size() - 1);
+    }
+
     int getTotalStep() {
         return list.size();
     }
+
+
 
 }

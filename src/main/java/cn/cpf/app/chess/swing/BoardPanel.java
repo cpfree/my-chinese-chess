@@ -7,11 +7,12 @@ import cn.cpf.app.chess.ctrl.Situation;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Place;
+import cn.cpf.app.chess.modal.PlayerType;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -80,7 +81,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
      * @param e 鼠标按压事件对象
      */
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {
         // 位置
         Place pointerPlace = ChessDefined.convertLocationToPlace(e.getPoint());
         // 当前走棋方
@@ -127,15 +128,11 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             return;
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
-        setEnabled(false);
         // 落子
-        Part part = Application.instance().locatePiece(curFromPiece.getPlace(), pointerPlace);
-        if (part != null) {
-            JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束了", JOptionPane.INFORMATION_MESSAGE);
+        Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
+        if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
+            Application.context().getComRunner().runOneTime();
         }
-        setEnabled(true);
-
-        Application.instance().getComRunner().runOneTime();
     }
 
     @Override

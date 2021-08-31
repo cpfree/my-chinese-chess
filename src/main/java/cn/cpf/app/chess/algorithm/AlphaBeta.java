@@ -1,7 +1,7 @@
 package cn.cpf.app.chess.algorithm;
 
-import cn.cpf.app.chess.conf.ChessConfig;
 import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
@@ -136,7 +136,7 @@ public class AlphaBeta {
                     }
                     list.forEach(item -> {
                         int singleScore = analysisBean.getSingleScore(pieces[item.x][item.y], item.y);
-                        if (singleScore > 0 || deep > ChessConfig.sha) {
+                        if (singleScore > 0 || deep > Application.config().getSearchKillStepDeepLevel()) {
                             stepBeanList.add(new StepBean(from, item, singleScore));
                         }
                     });

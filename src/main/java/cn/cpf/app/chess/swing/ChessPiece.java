@@ -3,6 +3,7 @@ package cn.cpf.app.chess.swing;
 import cn.cpf.app.chess.algorithm.Role;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
+import com.github.cosycode.common.lang.ShouldNotHappenException;
 
 /**
  * 棋子类
@@ -21,7 +22,6 @@ public class ChessPiece extends JPiece {
         this.piece = piece;
     }
 
-    @Deprecated
     public int getSingleScore(Role role) {
         switch (role) {
             case BOSS:
@@ -37,7 +37,7 @@ public class ChessPiece extends JPiece {
             case COUNSELOR:
                 return 150;
             default:
-                throw new RuntimeException();
+                throw new ShouldNotHappenException();
         }
     }
 

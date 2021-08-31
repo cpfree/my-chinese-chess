@@ -1,6 +1,5 @@
 package cn.cpf.app.chess.ctrl;
 
-import cn.cpf.app.chess.conf.ChessConfig;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.PlayerType;
 import cn.cpf.app.chess.modal.StepBean;
@@ -40,7 +39,7 @@ public class ComRunner {
         this.boardPanel = boardPanel;
         this.comRunThread = CtrlLoopThreadComp.ofRunnable(this::loop)
                 .setContinueIfException(true)
-                .setMillisecond(ChessConfig.INTERVAL_TIME)
+                .setMillisecond(Application.config().getComIntervalTime())
                 .setName("COM-RUN");
     }
 
@@ -78,6 +77,7 @@ public class ComRunner {
         comRunnable = false;
         forceRunTime = 0;
         comRunThread.pause();
+        log.info("COM 运行完当前循环后暂停");
     }
 
     /**
@@ -91,24 +91,21 @@ public class ComRunner {
         if (forceRunTime <= 0 && !comRunnable) {
             stopRun();
         }
-        final ControlCenter instance = Application.instance();
+        final AppContext instance = Application.context();
         try {
             StepBean evaluatedPlace = instance.computeStepBean();
             Part part = instance.locatePiece(evaluatedPlace.from, evaluatedPlace.to);
-            // 落子
             // 判断是否结束
             if (part != null) {
-                JOptionPane.showMessageDialog(null, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
                 stopRun();
-                log.info("游戏结束 = COM 暂停 ==> {} 胜利", part.name());
             }
         } catch (Exception e) {
+            log.error("出现异常", e);
             stopRun();
-            log.error("出现异常 = COM 暂停", e);
             new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
         }
         // 如果下一步棋手不是 AI, 则暂停
-        if (!PlayerType.COM.equals(ChessConfig.getPlayerType(instance.getSituation().getNextPart()))) {
+        if (!PlayerType.COM.equals(Application.config().getPlayerType(instance.getSituation().getNextPart()))) {
             stopRun();
             return;
         }

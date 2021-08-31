@@ -184,7 +184,7 @@ public class AnalysisBean {
     }
 
     /**
-     * @param part 更新 Boss 棋子的位置
+     * @param part     更新 Boss 棋子的位置
      * @param newPlace 新位置
      */
     public void updateBossPlace(Part part, Place newPlace) {

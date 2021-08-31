@@ -28,6 +28,7 @@ public class StepRecord {
     private final Place to;
     private final Date date;
     private final Piece eatenPiece;
+
     public StepRecord(Part part, int step, Piece piece, Place from, Place to, Piece eatenPiece) {
         this.part = part;
         this.step = step;

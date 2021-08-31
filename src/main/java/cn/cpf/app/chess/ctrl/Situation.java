@@ -1,11 +1,11 @@
 package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.algorithm.Role;
-import cn.cpf.app.chess.conf.ChessConfig;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
+import cn.cpf.app.chess.modal.StepRecord;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.Getter;
@@ -16,11 +16,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * <b>Description : </b> 当前棋局的形势, 双方都有什么棋子, 在什么位置, 下一步该谁走.
  * <p>
- * 为后台控制器和前台贡献的对象, 可以被后台控制器 {@link ControlCenter} & 前台panel {@link BoardPanel} 调用
+ * 为后台控制器和前台贡献的对象, 可以被后台控制器 {@link AppContext} & 前台panel {@link BoardPanel} 调用
  * </p>
  *
  * @author CPF
@@ -71,9 +72,8 @@ public class Situation {
     @Getter
     private Part nextPart;
 
-    void init(List<ChessPiece> list) {
+    void init(@NonNull List<ChessPiece> list, @NonNull Part nextPart) {
         // 成员变量初始化
-        situationStartTime = LocalDateTime.now();
         eatenPieceList = new ArrayList<>();
         pieceList = new ArrayList<>(list.size());
         pieceArrays = new ChessPiece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
@@ -83,7 +83,7 @@ public class Situation {
         blackPieceNum = 0;
         situationRecord = new SituationRecord();
         // 获取先手方配置信息
-        nextPart = ChessConfig.firstPart;
+        this.nextPart = nextPart;
         // 成员变量赋值
         pieceList.addAll(list);
         list.forEach(it -> {
@@ -102,6 +102,7 @@ public class Situation {
                 }
             }
         });
+        situationStartTime = LocalDateTime.now();
     }
 
     public ChessPiece getChessPiece(@NonNull Place place) {
@@ -137,6 +138,7 @@ public class Situation {
         // 判断是否是吃子
         ChessPiece eatenPiece = getChessPiece(to);
         if (eatenPiece != null) {
+            pieceList.remove(eatenPiece);
             eatenPieceList.add(eatenPiece);
             // ui 隐藏
             eatenPiece.hide();
@@ -155,6 +157,35 @@ public class Situation {
         nextPart = Part.getOpposite(nextPart);
         // 开额外线程判断是否胜利, 或连将
         return eatenPiece != null && eatenPiece.piece.role == Role.BOSS ? Part.getOpposite(nextPart) : null;
+    }
+
+    /**
+     * 撤销一步棋
+     */
+    boolean rollbackOneStep() {
+        Objects.requireNonNull(situationRecord, "situationRecord shouldn't be null");
+        List<StepRecord> list = situationRecord.getList();
+        if (list.isEmpty()) {
+            return false;
+        }
+        final StepRecord stepRecord = situationRecord.popRecord();
+        final Place from = stepRecord.getFrom();
+        final Place to = stepRecord.getTo();
+        pieceArrays[from.x][from.y] = pieceArrays[to.x][to.y];
+
+        final Piece eatenPiece = stepRecord.getEatenPiece();
+        if (eatenPiece != null) {
+            final Optional<ChessPiece> any = eatenPieceList.stream().filter(it -> it.piece.equals(eatenPiece)).findAny();
+            final ChessPiece chessPiece = any.orElseThrow(() -> new RuntimeException("被吃的棋子列表里面没有对应的棋子"));
+            chessPiece.setPlaceAndShow(to);
+        }
+        ChessPiece movePiece = getChessPiece(to);
+        movePiece.movePlace(from);
+
+        // 变更势力
+        nextPart = Part.getOpposite(nextPart);
+        // 开额外线程判断是否胜利, 或连将
+        return true;
     }
 
 }
