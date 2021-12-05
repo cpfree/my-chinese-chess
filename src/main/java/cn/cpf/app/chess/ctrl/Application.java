@@ -49,8 +49,9 @@ public class Application {
                 config.setBlackPlayerType(PlayerType.COM);
                 config.setRedPlayerType(PlayerType.PEOPLE);
                 config.setComIntervalTime(500);
-                config.setSearchDeepLevel(4);
-                config.setSearchKillStepDeepLevel(2);
+                config.setSearchDeepLevel(6);
+                config.setSearchKillStepDeepLevel(0);
+                config.setParallel(true);
                 // 获取配置棋子
                 BoardPanel boardPanel = (BoardPanel) ((ChessPanel) frame.getContentPane()).getBoardPanel();
                 Situation situation = new Situation();

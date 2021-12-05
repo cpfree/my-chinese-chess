@@ -77,7 +77,7 @@ public class ComRunner {
         comRunnable = false;
         forceRunTime = 0;
         comRunThread.pause();
-        log.info("COM 运行完当前循环后暂停");
+        log.debug("COM 运行完当前循环后暂停");
     }
 
     /**

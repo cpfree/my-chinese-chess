@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * @author CPF
  * Date: 2020/3/25 17:33
  */
-public class AnalysisBean {
+public class AnalysisBean{
 
     public final Piece[][] pieces;
 
@@ -25,7 +25,9 @@ public class AnalysisBean {
     private int redPieceNum;
     private int blackPieceNum;
 
-    public AnalysisBean(@NonNull Piece[][] rawPieceArrays) {
+    private int pieceScore;
+
+    public AnalysisBean(@NonNull final Piece[][] rawPieceArrays) {
         this.pieces = rawPieceArrays;
         redPieceNum = 0;
         blackPieceNum = 0;
@@ -49,32 +51,80 @@ public class AnalysisBean {
                 }
             }
         }
+        // 计算分值
+        this.pieceScore = calcPieceScore(rawPieceArrays);
     }
 
+    /**
+     * 计算棋盘评估分数
+     */
+    public static int calcPieceScore(final Piece[][] pieces) {
+        int num = 0;
+        for (int x = 0; x < ChessDefined.RANGE_X; x++) {
+            for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
+                Piece piece = pieces[x][y];
+                if (piece == null) {
+                    continue;
+                }
+                if (piece.part == Part.RED) {
+                    num += piece.pieceScore.placeScores[x * 10 + 9 - y];
+                    num += piece.pieceScore.existScore;
+                } else {
+                    num -= piece.pieceScore.placeScores[x * 10 + y];
+                    num -= piece.pieceScore.existScore;
+                }
+            }
+        }
+        return num;
+    }
 
     /**
      * 模拟走棋
      */
-    public void goForward(Place from, Place to, Piece eatenPiece) {
+    public int goForward(Place from, Place to, Piece eatenPiece) {
         final Piece movePiece = pieces[from.x][from.y];
         pieces[to.x][to.y] = movePiece;
         pieces[from.x][from.y] = null;
         if (movePiece.role == Role.BOSS) {
             updateBossPlace(movePiece.part, to);
         }
+        // 临时分值
+        int invScr = 0;
+        // 如果是红方, 则 + 移动之后的棋子存在值, - 移动之前的棋子存在值, 若是黑方则相反.
+        if (Part.RED == movePiece.part) {
+            invScr += movePiece.pieceScore.getPlaceScore(Part.RED, to.x, to.y);
+            invScr -= movePiece.pieceScore.getPlaceScore(Part.RED, from.x, from.y);
+        } else {
+            invScr -= movePiece.pieceScore.getPlaceScore(Part.BLACK, to.x, to.y);
+            invScr += movePiece.pieceScore.getPlaceScore(Part.BLACK, from.x, from.y);
+        }
         if (eatenPiece != null) {
+            // 若是将棋, 则更新BOSS子的位置
+            // 若被吃的棋子是红方, 则 - 被吃掉的棋子的存在值, 若是黑方则相反.
             if (eatenPiece.part == Part.RED) {
+                invScr -= eatenPiece.pieceScore.existScore;
+                invScr -= eatenPiece.pieceScore.getPlaceScore(Part.RED, to.x, to.y);
                 redPieceNum--;
             } else {
+                invScr += eatenPiece.pieceScore.existScore;
+                invScr += eatenPiece.pieceScore.getPlaceScore(Part.BLACK, to.x, to.y);
                 blackPieceNum--;
             }
+            // 更新分数
         }
+        pieceScore += invScr;
+//        // debug
+//        final int calcPieceScore = AnalysisBean.calcPieceScore(pieces);
+//        if (pieceScore != calcPieceScore ) {
+//            throw new RuntimeException("pieceScore == calcPieceScore error!!! " + pieceScore + ", calcPieceScore: " + calcPieceScore);
+//        }
+        return invScr;
     }
 
     /**
      * 模拟后退
      */
-    public void backStep(Place from, Place to, Piece eatenPiece) {
+    public void backStep(Place from, Place to, Piece eatenPiece, int tmpScore) {
         final Piece movePiece = pieces[to.x][to.y];
         pieces[from.x][from.y] = movePiece;
         pieces[to.x][to.y] = eatenPiece;
@@ -89,8 +139,14 @@ public class AnalysisBean {
                 blackPieceNum++;
             }
         }
+        // 更新分值
+        pieceScore -= tmpScore;
+        // debug
+//        final int calcPieceScore = AnalysisBean.calcPieceScore(pieces);
+//        if (pieceScore != calcPieceScore ) {
+//            throw new RuntimeException("pieceScore == calcPieceScore error!!! " + pieceScore + ", calcPieceScore: " + calcPieceScore);
+//        }
     }
-
 
     /**
      * 返回对本方的实力评估, 本方为正
@@ -99,67 +155,58 @@ public class AnalysisBean {
      * @return
      */
     public int getCurPartEvaluateScore(Part curPart) {
-        int num = 0;
-        for (int x = 0; x < ChessDefined.RANGE_X; x++) {
-            for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
-                Piece piece = pieces[x][y];
-                if (piece == null) {
-                    continue;
-                }
-                if (piece.part == curPart) {
-                    num += getSingleScore(piece, y);
-                } else {
-                    num -= getSingleScore(piece, y);
-                }
-            }
+        if (Part.RED == curPart) {
+            return pieceScore;
+        } else {
+            return - pieceScore;
         }
-        return num;
     }
 
-    /**
-     * @param piece
-     * @param y
-     * @return
-     */
-    public int getSingleScore(Piece piece, int y) {
-        if (piece == null) {
-            return 0;
-        }
-        switch (piece.role) {
-            case BOSS:
-                return 1000000;
-            case CAR:
-                return 1000;
-            case HORSE:
-                return 482 - blackPieceNum - redPieceNum;
-            case CANNON:
-                return 448 + blackPieceNum + redPieceNum;
-            // 过河之后分数更高
-            case SOLDIER:
-                if (piece.part == Part.RED) {
-                    if (y >= 5) {
-                        return 150;
-                    } else if (y > 2) {
-                        return 300;
-                    } else {
-                        return 200;
-                    }
-                } else {
-                    if (y <= 4) {
-                        return 150;
-                    } else if (y < 7) {
-                        return 300;
-                    } else {
-                        return 200;
-                    }
-                }
-            case ELEPHANT:
-            case COUNSELOR:
-                return 150;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
+
+//    /**
+//     * @param piece
+//     * @param y
+//     * @return
+//     */
+//    public int getSingleScore(Piece piece, int y) {
+//        if (piece == null) {
+//            return 0;
+//        }
+//        switch (piece.role) {
+//            case BOSS:
+//                return 1000000;
+//            case CAR:
+//                return 1000;
+//            case HORSE:
+//                return 482 - blackPieceNum - redPieceNum;
+//            case CANNON:
+//                return 448 + blackPieceNum + redPieceNum;
+//            // 过河之后分数更高
+//            case SOLDIER:
+//                if (piece.part == Part.RED) {
+//                    if (y >= 5) {
+//                        return 150;
+//                    } else if (y > 2) {
+//                        return 300;
+//                    } else {
+//                        return 200;
+//                    }
+//                } else {
+//                    if (y <= 4) {
+//                        return 150;
+//                    } else if (y < 7) {
+//                        return 300;
+//                    } else {
+//                        return 200;
+//                    }
+//                }
+//            case ELEPHANT:
+//            case COUNSELOR:
+//                return 150;
+//            default:
+//                throw new IllegalArgumentException();
+//        }
+//    }
 
     /**
      * 返回棋盘上某一方的棋子
@@ -224,5 +271,4 @@ public class AnalysisBean {
                 it.x == redBoss.x && it.y <= redBoss.y && it.y >= blackBoss.y
         ).collect(Collectors.toList());
     }
-
 }

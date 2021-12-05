@@ -79,7 +79,12 @@ public class AppContext {
         long t = System.currentTimeMillis();
         Piece[][] pieces = situation.genePiece();
         pieces = ArrayUtils.deepClone(pieces);
-        StepBean evaluatedPlace = AlphaBeta.getEvaluatedPlace(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
+        StepBean evaluatedPlace = null;
+        if (Application.config().isParallel()) {
+            evaluatedPlace = AlphaBeta.getEvaluatedPlaceWithParallel(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
+        } else {
+            evaluatedPlace = AlphaBeta.getEvaluatedPlace(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
+        }
         log.info("time: {}", (System.currentTimeMillis() - t));
         return evaluatedPlace;
     }

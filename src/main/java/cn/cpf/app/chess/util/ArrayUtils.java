@@ -1,5 +1,9 @@
 package cn.cpf.app.chess.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * <b>Description : </b> 工具类, 减少安全检查, 提升速度
  *
@@ -137,4 +141,46 @@ public class ArrayUtils {
         }
         return arr;
     }
+
+    /**
+     * 将一个列表分割成最多指定指定数量个列表
+     *
+     * 若 count > list.size() , 则分割成 list.size() 个列表
+     *
+     * eg: 源列表 [0, 1, 2, 3, 4]
+     *
+     * 分别分割成:
+     *  1: [[0, 1, 2, 3, 4]]
+     *  2: [[0, 1, 2], [3, 4]]
+     *  3: [[0, 1], [2, 3], [4]]
+     *  4: [[0], [1], [2], [3], [4]]
+     *  5: [[0], [1], [2], [3], [4]]
+     *
+     * @param list  列表
+     * @param count 风格数量
+     * @param <T>   列表中对象类型
+     * @return 分割后的列表
+     */
+    public static <T> List<List<T>> partition(List<T> list, int count) {
+        if (count <= 0) {
+            throw new IllegalArgumentException("count should not letter than 0");
+        }
+        if (list == null || list.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (count == 1) {
+            return Collections.singletonList(list);
+        }
+        final int i = list.size() / count;
+        final int j = list.size() % count;
+        final int len = i <= 0 ? j : count;
+        final List<List<T>> pList = new ArrayList<>(len);
+        for (int k = 0, s = 0, e; k < len; k++) {
+            e = s + i + (k < j ? 1 : 0);
+            pList.add(list.subList(s, e));
+            s = e;
+        }
+        return pList;
+    }
+
 }

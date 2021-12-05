@@ -32,6 +32,10 @@ public class AppConfig {
      */
     private int searchDeepLevel;
     /**
+     * 是否使用并行流
+     */
+    private boolean parallel;
+    /**
      * 搜索杀棋深度
      */
     private int searchKillStepDeepLevel;
