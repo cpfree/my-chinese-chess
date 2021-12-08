@@ -9,58 +9,98 @@ import com.github.cosycode.common.ext.hub.Throws;
 import lombok.NonNull;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 
+/**
+ * <b>Description : </b> 面板菜单
+ * <p>
+ * <b>created in </b> 2018/9/8
+ * </p>
+ *
+ * @author CPF
+ **/
 public class ChessMenuBar extends JMenuBar {
 
     private static final long serialVersionUID = 1L;
 
     public ChessMenuBar() {
-        addGameMenu();
-        addDebugMenu();
         addSettingMenu();
+        addDebugMenu();
 
         addMenuToMenuBar("撤销", e -> new Thread(Application.context()::rollbackOneStep).start());
-        addMenuToMenuBar("撤销至开头", e -> {
-            new Thread(()-> {
-                while (Application.context().rollbackOneStep()){
-                    Throws.con(600, Thread::sleep).logThrowable();
-                }
-            }).start();
-        });
+        addMenuToMenuBar("撤销至开头", e -> new Thread(()-> {
+            while (Application.context().rollbackOneStep()){
+                Throws.con(500, Thread::sleep).logThrowable();
+            }
+        }).start());
         addMenuToMenuBar("AI计算一次", e -> Application.context().getComRunner().runOneTime());
-    }
-
-    private void addGameMenu() {
-        JMenu muGame = new JMenu("game");
-        add(muGame);
-
-        addItemToMenu(muGame, "重新开局", e -> {
-            List<ChessPiece> list = ChessDefined.geneDefaultPieceSituation();
-            Application.context().init(list);
-        });
-        addItemToMenu(muGame, "人机对弈", e -> {
-            AppConfig config = Application.config();
-            config.setBlackPlayerType(PlayerType.COM);
-            config.setRedPlayerType(PlayerType.PEOPLE);
-        });
-        addItemToMenu(muGame, "机机对弈", e -> {
-            AppConfig config = Application.config();
-            config.setBlackPlayerType(PlayerType.COM);
-            config.setRedPlayerType(PlayerType.COM);
-        });
-        addItemToMenu(muGame, "人人对弈", e -> {
-            AppConfig config = Application.config();
-            config.setBlackPlayerType(PlayerType.PEOPLE);
-            config.setRedPlayerType(PlayerType.PEOPLE);
-        });
     }
 
     private void addSettingMenu() {
         JMenu muSetting = new JMenu("setting");
         add(muSetting);
-        addItemToMenu(muSetting, "COM 4", e -> Application.config().setSearchDeepLevel(4));
-        addItemToMenu(muSetting, "COM 6", e -> Application.config().setSearchDeepLevel(6));
+
+        addItemToMenu(muSetting, "重新开局", e -> {
+            List<ChessPiece> list = ChessDefined.geneDefaultPieceSituation();
+            Application.context().init(list);
+        });
+
+        muSetting.add(new JSeparator());
+
+        /* 添加移动棋子动画选择框 */
+        JCheckBoxMenuItem cm = new JCheckBoxMenuItem("移动棋子动画");
+        addLambdaMouseListener(cm, e -> Application.config().setCartoon(cm.getState()));
+        muSetting.add(cm);
+        // 初始化值
+        cm.setState(Application.config().isCartoon());
+
+        muSetting.add(new JSeparator());
+        /* 添加游戏模式单选按钮组 */
+        ButtonGroup playModalGroup = new ButtonGroup();
+        JRadioButtonMenuItem rmManAi = new JRadioButtonMenuItem("人机对弈", true);
+        JRadioButtonMenuItem rmManMan = new JRadioButtonMenuItem("人人对弈");
+        JRadioButtonMenuItem rmAiAi = new JRadioButtonMenuItem("机机对弈");
+        addLambdaMouseListener(rmManAi, e -> {
+            AppConfig config = Application.config();
+            config.setBlackPlayerType(PlayerType.COM);
+            config.setRedPlayerType(PlayerType.PEOPLE);
+        });
+        addLambdaMouseListener(rmManMan, e -> {
+            AppConfig config = Application.config();
+            config.setBlackPlayerType(PlayerType.PEOPLE);
+            config.setRedPlayerType(PlayerType.PEOPLE);
+        });
+        addLambdaMouseListener(rmAiAi, e -> {
+            AppConfig config = Application.config();
+            config.setBlackPlayerType(PlayerType.COM);
+            config.setRedPlayerType(PlayerType.COM);
+        });
+        playModalGroup.add(rmManAi);
+        playModalGroup.add(rmManMan);
+        playModalGroup.add(rmAiAi);
+        muSetting.add(rmManAi);
+        muSetting.add(rmManMan);
+        muSetting.add(rmAiAi);
+
+        muSetting.add(new JSeparator());
+        /* 设置难度单选按钮组 */
+        ButtonGroup searchDeepBtnGroup = new ButtonGroup();
+        final int searchDeepLevel = Application.config().getSearchDeepLevel();
+        JRadioButtonMenuItem rmDeep4 = new JRadioButtonMenuItem("DEEP-4", searchDeepLevel == 4);
+        JRadioButtonMenuItem rmDeep6 = new JRadioButtonMenuItem("DEEP-6", searchDeepLevel == 6);
+        JRadioButtonMenuItem rmDeep8 = new JRadioButtonMenuItem("DEEP-8", searchDeepLevel == 8);
+        addLambdaMouseListener(rmDeep4, e -> Application.config().setSearchDeepLevel(4));
+        addLambdaMouseListener(rmDeep6, e -> Application.config().setSearchDeepLevel(6));
+        addLambdaMouseListener(rmDeep8, e -> Application.config().setSearchDeepLevel(8));
+        searchDeepBtnGroup.add(rmDeep4);
+        searchDeepBtnGroup.add(rmDeep6);
+        searchDeepBtnGroup.add(rmDeep8);
+        muSetting.add(rmDeep4);
+        muSetting.add(rmDeep6);
+        muSetting.add(rmDeep8);
+        // 初始化
+
     }
 
     private void addDebugMenu() {
@@ -93,5 +133,9 @@ public class ChessMenuBar extends JMenuBar {
         JMenuItem menuItem = new JMenuItem(label);
         menuItem.addMouseListener(listener);
         add(menuItem);
+    }
+
+    private void addLambdaMouseListener(Component component, @NonNull LambdaMouseListener listener) {
+        component.addMouseListener(listener);
     }
 }

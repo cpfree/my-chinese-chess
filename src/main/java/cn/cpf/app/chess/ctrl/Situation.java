@@ -11,6 +11,7 @@ import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -133,26 +134,26 @@ public class Situation {
      * @return 如果目标位置是 Boss 角色, 则返回 被吃 boss 角色的势力
      */
     Part movePiece(Place from, Place to) {
-        ChessPiece fromPiece = getChessPiece(from);
-        Objects.requireNonNull(fromPiece);
-        // 判断是否是吃子
-        ChessPiece eatenPiece = getChessPiece(to);
+        final ChessPiece fromPiece = getChessPiece(from);
+        final ChessPiece eatenPiece = getChessPiece(to);
+        Objects.requireNonNull(fromPiece, "找不到移动的棋子");
+        // 判断是否是吃子, 如果棋子被吃掉, 则将棋子移动列表
         if (eatenPiece != null) {
             pieceList.remove(eatenPiece);
             eatenPieceList.add(eatenPiece);
             // ui 隐藏
-            eatenPiece.hide();
             log.info("move {} -> {}, {} eat {}", from, to, fromPiece.name, eatenPiece.name);
         }
-
-        // 走棋
+        // 更改棋盘数组
         pieceArrays[from.x][from.y] = null;
         pieceArrays[to.x][to.y] = fromPiece;
-        // ui 移动棋子
+        /* ui 移动from棋子, 隐藏被吃掉的棋子 */
         fromPiece.movePlace(to);
+        if (eatenPiece != null) {
+            eatenPiece.hide();
+        }
         // 添加记录
         situationRecord.addRecord(nextPart, fromPiece.piece, from, to, eatenPiece == null ? null : eatenPiece.piece);
-
         // 变更势力
         nextPart = Part.getOpposite(nextPart);
         // 开额外线程判断是否胜利, 或连将
@@ -161,12 +162,13 @@ public class Situation {
 
     /**
      * 撤销一步棋
+     * @return 撤掉的步骤记录
      */
     StepRecord rollbackOneStep() {
         Objects.requireNonNull(situationRecord, "situationRecord shouldn't be null");
         List<StepRecord> list = situationRecord.getList();
         if (list.isEmpty()) {
-            log.warn("没有步骤记录");
+            log.warn("步骤历史记录为空, 已经回退到起始状态!");
             return null;
         }
         // 弹出记录
@@ -174,26 +176,30 @@ public class Situation {
         final Place from = stepRecord.getFrom();
         final Place to = stepRecord.getTo();
         final Piece eatenPiece = stepRecord.getEatenPiece();
+        Optional.ofNullable(pieceArrays[from.x][from.y]).ifPresent(e -> {
+            throw new IllegalStateException("此处不该有棋子: " + e);
+        });
         // 撤回from
-        assert pieceArrays[from.x][from.y] == null : "此处不该有棋子";
-        ChessPiece movePiece = getChessPiece(to);
+        final ChessPiece movePiece = getChessPiece(to);
         pieceArrays[from.x][from.y] = movePiece;
-        movePiece.movePlace(from);
-        // 若有被吃掉的棋子, 则复活, 移动列表
+        /* 若有被吃掉的棋子, 则复活, 移动列表 */
         final ChessPiece chessPiece;
         if (eatenPiece != null) {
             final Optional<ChessPiece> any = eatenPieceList.stream().filter(it -> it.piece.equals(eatenPiece)).findAny();
             chessPiece = any.orElseThrow(() -> new RuntimeException("被吃的棋子列表里面没有对应的棋子"));
             pieceList.add(chessPiece);
             eatenPieceList.remove(chessPiece);
-            chessPiece.setPlaceAndShow(to);
         } else {
             chessPiece = null;
         }
         pieceArrays[to.x][to.y] = chessPiece;
+        // ui移动棋子放到最后面, 先显示被吃掉的棋子后移动
+        if (eatenPiece != null) {
+            chessPiece.setPlaceAndShow(to);
+        }
+        movePiece.movePlace(from);
         // 变更势力
         nextPart = Part.getOpposite(nextPart);
-        // 开额外线程判断是否胜利, 或连将
         return stepRecord;
     }
 

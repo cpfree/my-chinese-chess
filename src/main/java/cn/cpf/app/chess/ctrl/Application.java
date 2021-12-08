@@ -42,8 +42,6 @@ public class Application {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                JFrame frame = new ChessFrame();
-                frame.setVisible(true);
                 config = new AppConfig();
                 config.setFirstPart(Part.RED);
                 config.setBlackPlayerType(PlayerType.COM);
@@ -52,6 +50,9 @@ public class Application {
                 config.setSearchDeepLevel(6);
                 config.setSearchKillStepDeepLevel(0);
                 config.setParallel(true);
+                config.setCartoon(true);
+                JFrame frame = new ChessFrame();
+                frame.setVisible(true);
                 // 获取配置棋子
                 BoardPanel boardPanel = (BoardPanel) ((ChessPanel) frame.getContentPane()).getBoardPanel();
                 Situation situation = new Situation();

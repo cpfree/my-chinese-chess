@@ -21,8 +21,8 @@ public class SwingUtils {
     /**
      * 基本移动时间
      */
-    public static final int BASE_TIME = 1000;
-    public static final int PX_ONE_TIME = 1;
+    public static final int BASE_TIME = 100;
+    public static final int PX_ONE_TIME = 2;
 
     /**
      * 平滑将一个组件移动至另一个地点
@@ -37,7 +37,7 @@ public class SwingUtils {
         int xSub = toPoint.x - fromPoint.x;
         int ySub = toPoint.y - fromPoint.y;
         // 基本倍率
-        double sqrt = Math.sqrt((Math.sqrt(Math.pow(xSub, 2) + Math.pow(ySub, 2)) / PX_ONE_TIME * INTERVAL) / BASE_TIME);
+        final double sqrt = Math.sqrt((Math.sqrt(Math.pow(xSub, 2) + Math.pow(ySub, 2)) / PX_ONE_TIME * INTERVAL) / BASE_TIME);
         // 移动次数
         int times = (int) (BASE_TIME * sqrt / INTERVAL);
         for (int i = 0; i < times; i++) {

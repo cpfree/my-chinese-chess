@@ -1,6 +1,7 @@
 package cn.cpf.app.chess.swing;
 
 import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
@@ -86,7 +87,11 @@ public class JPiece {
      * 棋子移动到棋盘上 place 对应的坐标(带动画)
      */
     public void movePlace(@NonNull Place place) {
-        uiMovePlace(place);
+        if (Application.config().isCartoon()) {
+            uiMovePlace(place);
+        } else {
+            setPlace(place);
+        }
     }
 
     /**
@@ -98,7 +103,7 @@ public class JPiece {
         try {
             SwingUtils.moveComp(comp, toPoint);
         } catch (InterruptedException e) {
-            log.error("", e);
+            log.error("移动处理动画时发生异常", e);
             Thread.currentThread().interrupt();
         }
     }

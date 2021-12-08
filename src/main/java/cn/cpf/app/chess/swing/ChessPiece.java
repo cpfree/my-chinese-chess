@@ -1,15 +1,15 @@
 package cn.cpf.app.chess.swing;
 
-import cn.cpf.app.chess.algorithm.Role;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
-import com.github.cosycode.common.lang.ShouldNotHappenException;
+import lombok.ToString;
 
 /**
  * 棋子类
  *
  * @author cpf
  */
+@ToString
 public class ChessPiece extends JPiece {
 
     public final String name;
@@ -21,25 +21,5 @@ public class ChessPiece extends JPiece {
         this.name = name;
         this.piece = piece;
     }
-
-    public int getSingleScore(Role role) {
-        switch (role) {
-            case BOSS:
-                return 1000000;
-            case CAR:
-                return 1000;
-            case HORSE:
-                return 460;
-            case CANNON:
-                return 450;
-            case SOLDIER:
-            case ELEPHANT:
-            case COUNSELOR:
-                return 150;
-            default:
-                throw new ShouldNotHappenException();
-        }
-    }
-
 
 }

@@ -36,6 +36,10 @@ public class AppConfig {
      */
     private boolean parallel;
     /**
+     * 移动棋子是否显示动画
+     */
+    private boolean cartoon;
+    /**
      * 搜索杀棋深度
      */
     private int searchKillStepDeepLevel;
