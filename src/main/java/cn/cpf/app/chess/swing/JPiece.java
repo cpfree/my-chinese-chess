@@ -86,6 +86,13 @@ public class JPiece {
      * 棋子移动到棋盘上 place 对应的坐标(带动画)
      */
     public void movePlace(@NonNull Place place) {
+        uiMovePlace(place);
+    }
+
+    /**
+     * 棋子移动到棋盘上 place 对应的坐标(带动画)
+     */
+    private void uiMovePlace(@NonNull Place place) {
         this.place = place;
         Point toPoint = ChessDefined.convertPlaceToLocation(place.x, place.y);
         try {

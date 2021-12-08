@@ -93,8 +93,8 @@ public class ComRunner {
         }
         final AppContext instance = Application.context();
         try {
-            StepBean evaluatedPlace = instance.computeStepBean();
-            Part part = instance.locatePiece(evaluatedPlace.from, evaluatedPlace.to);
+            StepBean evaluatedStepBean = instance.computeStepBean();
+            Part part = instance.locatePiece(evaluatedStepBean.from, evaluatedStepBean.to);
             // 判断是否结束
             if (part != null) {
                 stopRun();

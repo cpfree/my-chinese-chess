@@ -78,6 +78,36 @@ public class AnalysisBean{
         return num;
     }
 
+    public int nextStepOpportunityCost(final Place from, final Place to) {
+        DebugInfo.incrementAlphaBetaTime();
+        // 临时分值
+        int invScr = 0;
+        final Piece eatenPiece = pieces[to.x][to.y];
+        if (eatenPiece != null) {
+            // 若是将棋, 则更新BOSS子的位置
+            // 若被吃的棋子是红方, 则 - 被吃掉的棋子的存在值, 若是黑方则相反.
+            if (eatenPiece.part == Part.RED) {
+                invScr -= eatenPiece.pieceScore.existScore;
+                invScr -= eatenPiece.pieceScore.getPlaceScore(Part.RED, to.x, to.y);
+            } else {
+                invScr += eatenPiece.pieceScore.existScore;
+                invScr += eatenPiece.pieceScore.getPlaceScore(Part.BLACK, to.x, to.y);
+            }
+            // 更新分数
+        }
+        final Piece movePiece = pieces[from.x][from.y];
+        // 如果是红方, 则 + 移动之后的棋子存在值, - 移动之前的棋子存在值, 若是黑方则相反.
+        if (Part.RED == movePiece.part) {
+            invScr += movePiece.pieceScore.getPlaceScore(Part.RED, to.x, to.y);
+            invScr -= movePiece.pieceScore.getPlaceScore(Part.RED, from.x, from.y);
+            return invScr;
+        } else {
+            invScr -= movePiece.pieceScore.getPlaceScore(Part.BLACK, to.x, to.y);
+            invScr += movePiece.pieceScore.getPlaceScore(Part.BLACK, from.x, from.y);
+            return -invScr;
+        }
+    }
+
     /**
      * 模拟走棋
      */
@@ -113,11 +143,9 @@ public class AnalysisBean{
             // 更新分数
         }
         pieceScore += invScr;
-//        // debug
-//        final int calcPieceScore = AnalysisBean.calcPieceScore(pieces);
-//        if (pieceScore != calcPieceScore ) {
-//            throw new RuntimeException("pieceScore == calcPieceScore error!!! " + pieceScore + ", calcPieceScore: " + calcPieceScore);
-//        }
+        // debug
+//        DebugInfo.checkScoreDynamicCalc(pieces, pieceScore);
+        DebugInfo.incrementAlphaBetaTime();
         return invScr;
     }
 

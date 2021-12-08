@@ -1,20 +1,20 @@
 package cn.cpf.app.chess.algorithm;
 
 import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepBean;
 import cn.cpf.app.chess.util.ArrayUtils;
+import com.github.cosycode.common.ext.bean.DoubleBean;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author CPF
@@ -36,11 +36,24 @@ public class AlphaBeta {
      * 这里要保证 Min + Max = 0, 哪怕是微不足道的差距都可能导致发生错误
      */
     private static final int MIN = -MAX;
-    /**
-     * CPU线程数
-     */
-    private static final int CPU_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
+    /**
+     * 根据棋子数量, 动态调整搜索深度
+     *
+     * @param pieceNum 棋子数量
+     * @return 调整搜索深度差值
+     */
+    private static int searchDeepSuit(final int pieceNum) {
+        // 根据棋子数量, 动态调整搜索深度
+        if (pieceNum > 20) {
+            return -2;
+        } else if (pieceNum <= 4) {
+            return 4;
+        } else if (pieceNum <= 8) {
+            return 2;
+        }
+        return 0;
+    }
 
     /**
      * 生成待选的列表，就是可以下子的空位
@@ -51,7 +64,8 @@ public class AlphaBeta {
      */
     private static List<StepBean> geneNestStepPlaces(final AnalysisBean analysisBean, final Part curPart, final int deep) {
         final Piece[][] pieces = analysisBean.pieces;
-//        final int searchKillStepDeepLevel = Application.config().getSearchKillStepDeepLevel();
+        // 是否杀气
+        final boolean killFlag = deep <= Application.config().getSearchKillStepDeepLevel();
         // TODO 去掉new
         List<StepBean> stepBeanList = new ArrayList<>();
         for (int x = 0; x < ChessDefined.RANGE_X; x++) {
@@ -65,13 +79,15 @@ public class AlphaBeta {
                         continue;
                     }
                     for (Place item : list) {
-                        stepBeanList.add(StepBean.of(from, item));
-//                        final int singleScore = analysisBean.getSingleScore(pieces[item.x][item.y], item.y);
-//                        // list 排序
-//                        // TODO 排序有待优化
-//                        stepBeanList.sort((o1, o2) -> o2.score - o1.score);
-//                        if (singleScore > 0 || deep > searchKillStepDeepLevel) {
-//                        }
+                        if (killFlag) {
+                            final int singleScore = analysisBean.nextStepOpportunityCost(from, item);
+                            if (singleScore > 50) {
+                                stepBeanList.add(StepBean.of(from, item));
+                                DebugInfo.incrementAndGetHisber();
+                            }
+                        } else {
+                            stepBeanList.add(StepBean.of(from, item));
+                        }
                     }
                 }
             }
@@ -79,35 +95,64 @@ public class AlphaBeta {
         return stepBeanList;
     }
 
-    /**
-     * 奇数层是电脑(max层)thisSide, 偶数层是human(min层)otherSide
-     *
-     * @param pieces  棋盘
-     * @param curPart 当前走棋方
-     * @param deep    搜索深度
-     * @return 下一步的位置
-     */
-    public static StepBean getEvaluatedPlace(final Piece[][] pieces, final Part curPart, int deep) {
-        // 1. 初始化各个变量
-        final AnalysisBean analysisBean = new AnalysisBean(pieces);
-        int best = MIN;
-        HashSet<StepBean> bestPlace = new HashSet<>();
-        // 2. 获取可以下子的空位列表
-        List<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
-
-        // 根据棋子数量, 动态调整搜索深度
-        int pieceNum = analysisBean.getPieceNum();
-        if (pieceNum > 20) {
-            deep -= 2;
-        } else if (pieceNum <= 4) {
-            deep += 4;
-        } else if (pieceNum <= 8) {
-            deep += 2;
-        }
+    @Deprecated
+    private static Collection<StepBean> geneNestStepPlacesOrder(final AnalysisBean analysisBean, final Part curPart, final int deep) {
+        final Piece[][] srcPieces = analysisBean.pieces;
+        // 获取可以下子的空位列表
+        final List<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
+        // 进入循环之前计算好循环内使用常量
+        List<DoubleBean<Integer, StepBean>> bestPlace = new ArrayList<>();
         // 对方棋手
         final Part oppositeCurPart = Part.getOpposite(curPart);
         // 下一深度
         final int nextDeep = deep - 1;
+        log.warn("size : {}, content: {}", stepBeanList.size(), stepBeanList);
+        for (StepBean item : stepBeanList) {
+            final Place to = item.to;
+            // 备份
+            final Piece eatenPiece = srcPieces[to.x][to.y];
+            int score;
+            // 判断是否胜利
+            if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
+                score = MAX;
+            } else {
+                // 走棋
+                final int invScr = analysisBean.goForward(item.from, to, eatenPiece);
+                // 评分
+                score = negativeMaximumWithNoCut(analysisBean, oppositeCurPart, nextDeep);
+                // 退回上一步
+                analysisBean.backStep(item.from, to, eatenPiece, invScr);
+            }
+            // 这里添加进所有的分数
+            bestPlace.add(new DoubleBean<>(score, item));
+        }
+        bestPlace.sort((o1, o2) -> o2.getO1() - o1.getO1());
+        for (DoubleBean<Integer, StepBean> doubleBean : bestPlace) {
+            System.out.println(doubleBean.getO1() + " === " + doubleBean.getO2());
+        }
+        return bestPlace.stream().map(DoubleBean::getO2).collect(Collectors.toList());
+    }
+
+
+    /**
+     * 负极大值搜索算法
+     *
+     * @param analysisBean 局势分析对象
+     * @param curPart 当前走棋方
+     * @param deep 搜索深度
+     * @return 负极大值搜索算法计算分值
+     */
+    @Deprecated
+    private static int negativeMaximumWithNoCut(AnalysisBean analysisBean, Part curPart, int deep) {
+        // 1. 初始化各个变量
+        final Piece[][] pieces = analysisBean.pieces;
+        int best = MIN;
+        // 对方棋手
+        final Part oppositeCurPart = Part.getOpposite(curPart);
+        // 下一深度
+        final int nextDeep = deep - 1;
+        // 2. 生成待选的列表，就是可以下子的列表
+        List<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
         for (StepBean item : stepBeanList) {
             Place from = item.from;
             Place to = item.to;
@@ -120,10 +165,61 @@ public class AlphaBeta {
             } else {
                 // 走棋
                 final int invScr = analysisBean.goForward(from, to, eatenPiece);
+                // 评估
+                if (deep <= 1) {
+                    score = analysisBean.getCurPartEvaluateScore(curPart);
+                } else {
+                    score = negativeMaximumWithNoCut(analysisBean, oppositeCurPart, nextDeep);
+                }
+                // 退回上一步
+                analysisBean.backStep(from, to, eatenPiece, invScr);
+            }
+            if (score > best) { // 找到一个更好的分，就更新分数
+                best = score;
+            }
+        }
+        return -best;
+    }
+
+
+    /**
+     * 奇数层是电脑(max层)thisSide, 偶数层是human(min层)otherSide
+     *
+     * @param srcPieces  棋盘
+     * @param curPart 当前走棋方
+     * @param deep    搜索深度
+     * @return 下一步的位置
+     */
+    public static Set<StepBean> getEvaluatedPlace(final Piece[][] srcPieces, final Part curPart, int deep) {
+        // 1. 初始化各个变量
+        final AnalysisBean analysisBean = new AnalysisBean(srcPieces);
+        // 根据棋子数量, 动态调整搜索深度
+        deep += searchDeepSuit(analysisBean.getPieceNum());
+        // 2. 获取可以下子的空位列表
+        List<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
+        // 进入循环之前计算好循环内使用常量
+        Set<StepBean> bestPlace = new HashSet<>();
+        int best = MIN;
+        // 对方棋手
+        final Part oppositeCurPart = Part.getOpposite(curPart);
+        // 下一深度
+        final int nextDeep = deep - 1;
+        log.debug("size : {}, content: {}", stepBeanList.size(), stepBeanList);
+        for (StepBean item : stepBeanList) {
+            final Place to = item.to;
+            // 备份
+            final Piece eatenPiece = srcPieces[to.x][to.y];
+            int score;
+            // 判断是否胜利
+            if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
+                score = MAX;
+            } else {
+                // 走棋
+                final int invScr = analysisBean.goForward(item.from, to, eatenPiece);
                 // 评分
                 score = negativeMaximum(analysisBean, oppositeCurPart, nextDeep, -best);
                 // 退回上一步
-                analysisBean.backStep(from, to, eatenPiece, invScr);
+                analysisBean.backStep(item.from, to, eatenPiece, invScr);
             }
             if (score == best) { // 找到相同的分数, 就添加这一步
                 bestPlace.add(item);
@@ -134,40 +230,26 @@ public class AlphaBeta {
                 bestPlace.add(item);
             }
         }
-
-        // 随机选择一个最好的一步
-        int count = bestPlace.size();
-        int ran = new Random().nextInt(count);
-        return (StepBean) bestPlace.toArray()[ran];
+        return bestPlace;
     }
 
     /**
      * 奇数层是电脑(max层)thisSide, 偶数层是human(min层)otherSide
      *
-     * @param sourcePieces  棋盘
+     * @param srcPieces  棋盘
      * @param curPart 当前走棋方
      * @param deep    搜索深度
      * @return 下一步的位置
      */
-    public static StepBean getEvaluatedPlaceWithParallel(final Piece[][] sourcePieces, final Part curPart, int deep) {
-
-        final AnalysisBean analysisBean = new AnalysisBean(sourcePieces);
-
-        final List<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
-
-        final HashSet<StepBean> bestPlace = new HashSet<>();
-        // 2. 获取可以下子的空位列表
-
-        // 根据棋子数量, 动态调整搜索深度
-        final int pieceNum = analysisBean.getPieceNum();
-        if (pieceNum > 20) {
-            deep -= 2;
-        } else if (pieceNum <= 4) {
-            deep += 4;
-        } else if (pieceNum <= 8) {
-            deep += 2;
-        }
+    public static Set<StepBean> getEvaluatedPlaceWithParallel(final Piece[][] srcPieces, final Part curPart, int deep) {
         // 1. 初始化各个变量
+        final AnalysisBean srcAnalysisBean = new AnalysisBean(srcPieces);
+        // 根据棋子数量, 动态调整搜索深度
+        deep += searchDeepSuit(srcAnalysisBean.getPieceNum());
+        // 2. 获取可以下子的空位列表
+        final Collection<StepBean> stepBeanList = geneNestStepPlaces(srcAnalysisBean, curPart, deep);
+        // 进入循环之前计算好循环内使用常量
+        final Set<StepBean> bestPlace = new HashSet<>();
         final AtomicInteger best = new AtomicInteger(MIN);
         // 对方棋手
         final Part oppositeCurPart = Part.getOpposite(curPart);
@@ -176,8 +258,8 @@ public class AlphaBeta {
         log.debug("size : {}, content: {}", stepBeanList.size(), stepBeanList);
         stepBeanList.stream().parallel().forEach(item -> {
             log.debug("并行流 ==> Thread : {}", Thread.currentThread().getId());
-            final Piece[][] pieces = ArrayUtils.deepClone(sourcePieces);
-            final AnalysisBean bean = new AnalysisBean(pieces);
+            final Piece[][] pieces = ArrayUtils.deepClone(srcPieces);
+            final AnalysisBean analysisBean = new AnalysisBean(pieces);
 
             final Place to = item.to;
             // 备份
@@ -188,11 +270,11 @@ public class AlphaBeta {
                 score = MAX;
             } else {
                 // 走棋
-                final int invScr = bean.goForward(item.from, to, eatenPiece);
+                final int invScr = analysisBean.goForward(item.from, to, eatenPiece);
                 // 评分
-                score = negativeMaximum(bean, oppositeCurPart, nextDeep, -best.get());
+                score = negativeMaximum(analysisBean, oppositeCurPart, nextDeep, -best.get());
                 // 退回上一步
-                bean.backStep(item.from, to, eatenPiece, invScr);
+                analysisBean.backStep(item.from, to, eatenPiece, invScr);
             }
             if (score == best.get()) { // 找到相同的分数, 就添加这一步
                 synchronized (bestPlace) {
@@ -207,20 +289,18 @@ public class AlphaBeta {
                 }
             }
         });
-
-        // 随机选择一个最好的一步
-        int count = bestPlace.size();
-        int ran = new Random().nextInt(count);
-        return (StepBean) bestPlace.toArray()[ran];
+        return bestPlace;
     }
 
 
     /**
-     * @param analysisBean
-     * @param curPart
-     * @param deep
-     * @param alphaBeta
-     * @return
+     * 负极大值搜索算法
+     *
+     * @param analysisBean 局势分析对象
+     * @param curPart 当前走棋方
+     * @param deep 搜索深度
+     * @param alphaBeta alphaBeta 剪枝分值
+     * @return 负极大值搜索算法计算分值
      */
     private static int negativeMaximum(AnalysisBean analysisBean, Part curPart, int deep, int alphaBeta) {
         // 1. 初始化各个变量

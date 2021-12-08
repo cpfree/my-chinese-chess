@@ -36,7 +36,6 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
      * 当前走棋开始坐标位置对应棋子
      */
     private transient ChessPiece curFromPiece;
-
     /**
      * 场景
      */
@@ -53,13 +52,20 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     }
 
     /**
-     * gui 落子, 面板执行落子的操作
+     * 更新标记
      */
     public void updateMark(Place from, Place to) {
         // 更新标记
         curFromPiece = null;
         // 更改标记
         traceMarker.endedStep(from, to);
+    }
+
+    /**
+     * 初始化所有标记
+     */
+    public void initMark() {
+        traceMarker.initMarker();
     }
 
     /**
@@ -75,6 +81,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         traceMarker.initMarker();
         // 添加鼠标事件
         addMouseListener(this);
+        repaint();
     }
 
     /**
@@ -129,10 +136,12 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
         // 落子
-        Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
-        if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
-            Application.context().getComRunner().runOneTime();
-        }
+        new Thread(()-> {
+            Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
+            if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
+                Application.context().getComRunner().runOneTime();
+            }
+        }).start();
     }
 
     @Override

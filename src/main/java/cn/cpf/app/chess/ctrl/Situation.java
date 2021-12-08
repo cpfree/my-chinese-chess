@@ -149,7 +149,7 @@ public class Situation {
         pieceArrays[from.x][from.y] = null;
         pieceArrays[to.x][to.y] = fromPiece;
         // ui 移动棋子
-        fromPiece.setPlace(to);
+        fromPiece.movePlace(to);
         // 添加记录
         situationRecord.addRecord(nextPart, fromPiece.piece, from, to, eatenPiece == null ? null : eatenPiece.piece);
 
@@ -162,30 +162,39 @@ public class Situation {
     /**
      * 撤销一步棋
      */
-    boolean rollbackOneStep() {
+    StepRecord rollbackOneStep() {
         Objects.requireNonNull(situationRecord, "situationRecord shouldn't be null");
         List<StepRecord> list = situationRecord.getList();
         if (list.isEmpty()) {
-            return false;
+            log.warn("没有步骤记录");
+            return null;
         }
+        // 弹出记录
         final StepRecord stepRecord = situationRecord.popRecord();
         final Place from = stepRecord.getFrom();
         final Place to = stepRecord.getTo();
-        pieceArrays[from.x][from.y] = pieceArrays[to.x][to.y];
-
         final Piece eatenPiece = stepRecord.getEatenPiece();
+        // 撤回from
+        assert pieceArrays[from.x][from.y] == null : "此处不该有棋子";
+        ChessPiece movePiece = getChessPiece(to);
+        pieceArrays[from.x][from.y] = movePiece;
+        movePiece.movePlace(from);
+        // 若有被吃掉的棋子, 则复活, 移动列表
+        final ChessPiece chessPiece;
         if (eatenPiece != null) {
             final Optional<ChessPiece> any = eatenPieceList.stream().filter(it -> it.piece.equals(eatenPiece)).findAny();
-            final ChessPiece chessPiece = any.orElseThrow(() -> new RuntimeException("被吃的棋子列表里面没有对应的棋子"));
+            chessPiece = any.orElseThrow(() -> new RuntimeException("被吃的棋子列表里面没有对应的棋子"));
+            pieceList.add(chessPiece);
+            eatenPieceList.remove(chessPiece);
             chessPiece.setPlaceAndShow(to);
+        } else {
+            chessPiece = null;
         }
-        ChessPiece movePiece = getChessPiece(to);
-        movePiece.movePlace(from);
-
+        pieceArrays[to.x][to.y] = chessPiece;
         // 变更势力
         nextPart = Part.getOpposite(nextPart);
         // 开额外线程判断是否胜利, 或连将
-        return true;
+        return stepRecord;
     }
 
 }

@@ -1,10 +1,8 @@
 package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.algorithm.AlphaBeta;
-import cn.cpf.app.chess.modal.Part;
-import cn.cpf.app.chess.modal.Piece;
-import cn.cpf.app.chess.modal.Place;
-import cn.cpf.app.chess.modal.StepBean;
+import cn.cpf.app.chess.algorithm.DebugInfo;
+import cn.cpf.app.chess.modal.*;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessPiece;
 import cn.cpf.app.chess.util.ArrayUtils;
@@ -19,6 +17,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * <b>Description : </b> 负责ui与后台数据交互, 以及功能性控制
@@ -76,17 +76,24 @@ public class AppContext {
      * @return AI 计算下一步落子位置
      */
     public StepBean computeStepBean() {
+        DebugInfo.initAlphaBetaTime();
         long t = System.currentTimeMillis();
         Piece[][] pieces = situation.genePiece();
         pieces = ArrayUtils.deepClone(pieces);
-        StepBean evaluatedPlace = null;
+        Set<StepBean> evaluatedPlaceSet = null;
         if (Application.config().isParallel()) {
-            evaluatedPlace = AlphaBeta.getEvaluatedPlaceWithParallel(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
+            evaluatedPlaceSet = AlphaBeta.getEvaluatedPlaceWithParallel(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
         } else {
-            evaluatedPlace = AlphaBeta.getEvaluatedPlace(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
+            evaluatedPlaceSet = AlphaBeta.getEvaluatedPlace(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
         }
+        // 随机选择一个最好的一步
+        int ran = new Random().nextInt(evaluatedPlaceSet.size());
+        log.info("evaluated Set == > {}", evaluatedPlaceSet);
+        final StepBean stepBean = (StepBean) evaluatedPlaceSet.toArray()[ran];
+        log.info("evaluated == > {}", stepBean);
         log.info("time: {}", (System.currentTimeMillis() - t));
-        return evaluatedPlace;
+        DebugInfo.logEnd();
+        return stepBean;
     }
 
     /**
@@ -103,4 +110,16 @@ public class AppContext {
         return part;
     }
 
+    /**
+     * 撤销一步棋
+     */
+    public boolean rollbackOneStep() {
+        final StepRecord stepRecord = situation.rollbackOneStep();
+        if (stepRecord == null) {
+            boardPanel.initMark();
+        } else {
+            boardPanel.updateMark(stepRecord.getFrom(), stepRecord.getTo());
+        }
+        return stepRecord != null;
+    }
 }
