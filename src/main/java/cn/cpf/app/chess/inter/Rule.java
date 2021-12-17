@@ -41,7 +41,7 @@ public interface Rule {
      * @param place  当前棋子在棋盘坐标位置
      * @return 当前棋子所有的走位集合
      */
-    List<Place> find(Piece[][] pieces, Part part, Place place);
+    MyList<Place> find(Piece[][] pieces, Part part, Place place);
 
     default int checkPlace(Piece chessPiece, Part part) {
         if (chessPiece == null) {

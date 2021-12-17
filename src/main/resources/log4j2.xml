@@ -9,9 +9,9 @@
     <Appenders>
         <!--这个输出控制台的配置，这里输出除了warn和error级别的信息到System.out -->
         <Console name="console_out_appender" target="SYSTEM_OUT">
-            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY" />
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
             <!-- 输出日志的格式 -->
-            <PatternLayout pattern="[%p] %d{HH:mm:ss} (%C:%L -> %M) %m%n" />
+            <PatternLayout pattern="[%p] %d{HH:mm:ss} (%C:%L -> %M) %m%n"/>
         </Console>
     </Appenders>
 
@@ -20,10 +20,10 @@
         <Logger name="org.springframework" level="WARN"/>
         <Logger name="org.apache.http" level="WARN"/>
         <Logger name="org.apache.commons" level="WARN"/>
-        <Logger name="cn.cpf" level="DEBUG"/>
+        <Logger name="cn.cpf" level="INFO"/>
 
         <Root level="WARN">
-            <AppenderRef ref="console_out_appender" />
+            <AppenderRef ref="console_out_appender"/>
         </Root>
     </Loggers>
 

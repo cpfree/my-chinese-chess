@@ -1,14 +1,12 @@
 package cn.cpf.app.chess.algorithm;
 
+import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.inter.Rule;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.util.ArrayUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import cn.cpf.app.chess.util.ListPool;
 
 public enum Role {
     /**
@@ -34,12 +32,12 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
             AnalysisBean analysisBean = new AnalysisBean(pieces);
             final int x = place.x;
             final int y = place.y;
             // TODO 待优化
-            List<Place> list = new ArrayList<>(4);
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(4);
             // x轴移动
             Place oppoBossPlace = analysisBean.getOppoBossPlace(part);
             if (x == 4) {
@@ -109,16 +107,18 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
-            int x = place.x;
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
+            final int x = place.x;
             int yCenter = Part.RED == part ? 8 : 1;
             if (x != 4) {
                 if (checkPlace(pieces[4][yCenter], part) >= 0) {
-                    return Collections.singletonList(Place.of(4, yCenter));
+                    final MyList<Place> places = ListPool.localPool().getAPlaceList(1);
+                    places.add(Place.of(4, yCenter));
+                    return places;
                 }
-                return Collections.emptyList();
+                return ListPool.getEmptyList();
             }
-            List<Place> list = new ArrayList<>(4);
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(4);
             yCenter += 1;
             if (checkPlace(pieces[3][yCenter], part) >= 0) {
                 list.add(Place.of(3, yCenter));
@@ -159,11 +159,11 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
-            int x = place.x;
-            int y = place.y;
-            int yCenter = Part.RED == part ? 7 : 2;
-            List<Place> list = new ArrayList<>(4);
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
+            final int x = place.x;
+            final int y = place.y;
+            final int yCenter = Part.RED == part ? 7 : 2;
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(4);
             if (x == 0) {
                 if (pieces[1][yCenter - 1] == null && checkPlace(pieces[2][yCenter - 2], part) >= 0) {
                     list.add(Place.of(2, yCenter - 2));
@@ -228,10 +228,10 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
-            int xInit = place.x;
-            int yInit = place.y;
-            List<Place> list = new ArrayList<>();
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
+            final int xInit = place.x;
+            final int yInit = place.y;
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(17);
             for (int x = xInit - 1; x >= 0; x--) {
                 Piece chessPiece = pieces[x][yInit];
                 if (chessPiece == null) {
@@ -300,10 +300,10 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
-            int xInit = place.x;
-            int yInit = place.y;
-            List<Place> list = new ArrayList<>();
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
+            final int xInit = place.x;
+            final int yInit = place.y;
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(17);
             boolean kong = false;
             for (int x = xInit - 1; x >= 0; x--) {
                 Piece chessPiece = pieces[x][yInit];
@@ -403,10 +403,10 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
-            int xInit = place.x;
-            int yInit = place.y;
-            List<Place> list = new ArrayList<>(8);
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
+            final int xInit = place.x;
+            final int yInit = place.y;
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(8);
             if (xInit > 1 && pieces[xInit - 1][yInit] == null) {
                 if (yInit > 0) {
                     addPlaceIntoList(pieces, part, list, Place.of(xInit - 2, yInit - 1));
@@ -466,10 +466,10 @@ public enum Role {
         }
 
         @Override
-        public List<Place> find(Piece[][] pieces, Part part, Place place) {
-            int xInit = place.x;
-            int yInit = place.y;
-            List<Place> list = new ArrayList<>(3);
+        public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
+            final int xInit = place.x;
+            final int yInit = place.y;
+            final MyList<Place> list = ListPool.localPool().getAPlaceList(3);
             if (part == Part.RED) {
                 if (yInit < 5) {
                     // 可以左右移动
@@ -507,37 +507,39 @@ public enum Role {
         this.rule = rule;
     }
 
+    /**
+     * 检查棋子是否符合规则
+     */
     public boolean check(Piece[][] piece, Part part, Place from, Place to) {
         final AnalysisBean analysisBean = new AnalysisBean(piece);
         if (this == Role.BOSS) {
             if (analysisBean.bossF2fAfterBossMove(part, to)) {
                 return false;
             }
-            return rule.check(analysisBean.pieces, part, from, to);
         } else {
-            if (to.x != from.x && analysisBean.bossF2fAfterLeave(from)) {
+            if (analysisBean.isBossF2FAndWithOnlyThePlaceInMiddle(from)) {
                 return false;
             }
-            return rule.check(analysisBean.pieces, part, from, to);
         }
+        return rule.check(analysisBean.pieces, part, from, to);
     }
 
 
-    public List<Place> find(AnalysisBean analysisBean, Part part, Place place) {
+    public MyList<Place> find(AnalysisBean analysisBean, Part curPart, Place from) {
         if (this == Role.BOSS) {
-            return rule.find(analysisBean.pieces, part, place);
+            return rule.find(analysisBean.pieces, curPart, from);
         } else {
-            List<Place> places = rule.find(analysisBean.pieces, part, place);
-            if (analysisBean.bossF2fAfterLeave(place)) {
+            MyList<Place> places = rule.find(analysisBean.pieces, curPart, from);
+            if (analysisBean.isBossF2FAndWithOnlyThePlaceInMiddle(from)) {
                 return analysisBean.filterPlace(places);
             }
             return places;
         }
     }
 
-    public List<Place> find(Piece[][] piece, Part part, Place place) {
+    public MyList<Place> find(Piece[][] piece, Part curPart, Place from) {
         final AnalysisBean analysisBean = new AnalysisBean(piece);
-        return find(analysisBean, part, place);
+        return find(analysisBean, curPart, from);
     }
 
 }

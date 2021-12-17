@@ -5,17 +5,18 @@ import cn.cpf.app.chess.conf.ChessImage;
 import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.ctrl.Situation;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
+import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.PlayerType;
+import cn.cpf.app.chess.util.ListPool;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.List;
 
 /**
  * <b>Description : </b> 棋盘面板
@@ -105,9 +106,11 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
                 curFromPiece = situation.getChessPiece(pointerPlace);
                 traceMarker.setMarkFromPlace(pointerPlace);
                 // 获取toList
-                List<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
+                MyList<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
                 traceMarker.showMarkPlace(list);
                 log.info("true -> 当前焦点位置有棋子且是本方棋子");
+                final ListPool listPool = ListPool.localPool();
+                listPool.addListToPool(list);
                 return;
             }
             log.warn("warning -> from 焦点指示错误");
@@ -123,9 +126,10 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             // 更新 curFromPiece
             curFromPiece = pointerPiece;
             traceMarker.setMarkFromPlace(pointerPlace);
-            List<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
+            MyList<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
             traceMarker.showMarkPlace(list);
             log.info("true -> 更新 curFromPiece");
+            ListPool.localPool().addListToPool(list);
             return;
         }
         // 如果不符合规则则直接返回
@@ -136,7 +140,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
         // 落子
-        new Thread(()-> {
+        new Thread(() -> {
             Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
             if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
                 Application.context().getComRunner().runOneTime();

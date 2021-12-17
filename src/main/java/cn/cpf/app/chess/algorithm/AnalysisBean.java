@@ -1,14 +1,13 @@
 package cn.cpf.app.chess.algorithm;
 
 import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.util.ArrayUtils;
 import lombok.NonNull;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * <b>Description : </b> 用于ai算法的分析运算, 相当于为运算而做的一个副本
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
  * @author CPF
  * Date: 2020/3/25 17:33
  */
-public class AnalysisBean{
+public class AnalysisBean {
 
     public final Piece[][] pieces;
 
@@ -78,6 +77,13 @@ public class AnalysisBean{
         return num;
     }
 
+    /**
+     * 获取 一步（只进攻, 不防守） 可以相对增多的分值, 红方为正, 黑方为负
+     *
+     * @param from from 位置
+     * @param to to 位置
+     * @return 一步（只进攻, 不防守） 可以相对增多的分值
+     */
     public int nextStepOpportunityCost(final Place from, final Place to) {
         DebugInfo.incrementAlphaBetaTime();
         // 临时分值
@@ -144,7 +150,7 @@ public class AnalysisBean{
         }
         pieceScore += invScr;
         // debug
-//        DebugInfo.checkScoreDynamicCalc(pieces, pieceScore);
+        DebugInfo.checkScoreDynamicCalc(pieces, pieceScore);
         DebugInfo.incrementAlphaBetaTime();
         return invScr;
     }
@@ -186,7 +192,7 @@ public class AnalysisBean{
         if (Part.RED == curPart) {
             return pieceScore;
         } else {
-            return - pieceScore;
+            return -pieceScore;
         }
     }
 
@@ -237,9 +243,9 @@ public class AnalysisBean{
 //    }
 
     /**
-     * 返回棋盘上某一方的棋子
+     * 返回棋盘上某一方的棋子数量
      */
-    public int getPieceNum(Part curPart) {
+    public int getPieceCount(Part curPart) {
         return curPart == Part.RED ? redPieceNum : blackPieceNum;
     }
 
@@ -249,7 +255,6 @@ public class AnalysisBean{
     public int getPieceNum() {
         return redPieceNum + blackPieceNum;
     }
-
 
     /**
      * 获取对方Boss的位置
@@ -271,10 +276,11 @@ public class AnalysisBean{
     }
 
     /**
-     * @return boss 是否为面对面
+     * @return boss棋子移动后 是否为面对面
      */
     public boolean bossF2fAfterBossMove(Part curPart, Place curNextPlace) {
         Place oppPlace = curPart == Part.RED ? blackBoss : redBoss;
+        // 若两个 boss 棋子坐标不一致, 则直接返回 false
         if (curNextPlace.x != oppPlace.x) {
             return false;
         }
@@ -282,10 +288,11 @@ public class AnalysisBean{
     }
 
     /**
-     * @return boss 是否为面对面
+     * @return true : 两个 boss 面对面, 且中间只有 place 一个棋子
      */
-    public boolean bossF2fAfterLeave(Place place) {
-        if (redBoss.x != blackBoss.x || place.x != redBoss.x) {
+    public boolean isBossF2FAndWithOnlyThePlaceInMiddle(Place place) {
+        // 如果 两个 boss 不是面对面 或者 当前位置不在两个boss中间, 则直接返回false
+        if (redBoss.x != blackBoss.x || place.x != redBoss.x || place.y > redBoss.y || place.y < blackBoss.y) {
             return false;
         }
         return ArrayUtils.oneInMiddle(pieces[redBoss.x], redBoss.y, blackBoss.y);
@@ -294,9 +301,10 @@ public class AnalysisBean{
     /**
      * @return boss 是否为面对面
      */
-    public List<Place> filterPlace(List<Place> places) {
-        return places.stream().filter(it ->
-                it.x == redBoss.x && it.y <= redBoss.y && it.y >= blackBoss.y
-        ).collect(Collectors.toList());
+    public MyList<Place> filterPlace(MyList<Place> places) {
+        return places.filter(item -> {
+            Place it = (Place) item;
+            return it.x == redBoss.x && it.y <= redBoss.y && it.y >= blackBoss.y;
+        });
     }
 }
