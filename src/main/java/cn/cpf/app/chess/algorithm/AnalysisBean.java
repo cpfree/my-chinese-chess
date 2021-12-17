@@ -175,18 +175,13 @@ public class AnalysisBean {
         }
         // 更新分值
         pieceScore -= tmpScore;
-        // debug
-//        final int calcPieceScore = AnalysisBean.calcPieceScore(pieces);
-//        if (pieceScore != calcPieceScore ) {
-//            throw new RuntimeException("pieceScore == calcPieceScore error!!! " + pieceScore + ", calcPieceScore: " + calcPieceScore);
-//        }
     }
 
     /**
      * 返回对本方的实力评估, 本方为正
      *
-     * @param curPart
-     * @return
+     * @param curPart 当前走棋方
+     * @return 当前走棋方的实力评估
      */
     public int getCurPartEvaluateScore(Part curPart) {
         if (Part.RED == curPart) {
@@ -195,52 +190,6 @@ public class AnalysisBean {
             return -pieceScore;
         }
     }
-
-
-//    /**
-//     * @param piece
-//     * @param y
-//     * @return
-//     */
-//    public int getSingleScore(Piece piece, int y) {
-//        if (piece == null) {
-//            return 0;
-//        }
-//        switch (piece.role) {
-//            case BOSS:
-//                return 1000000;
-//            case CAR:
-//                return 1000;
-//            case HORSE:
-//                return 482 - blackPieceNum - redPieceNum;
-//            case CANNON:
-//                return 448 + blackPieceNum + redPieceNum;
-//            // 过河之后分数更高
-//            case SOLDIER:
-//                if (piece.part == Part.RED) {
-//                    if (y >= 5) {
-//                        return 150;
-//                    } else if (y > 2) {
-//                        return 300;
-//                    } else {
-//                        return 200;
-//                    }
-//                } else {
-//                    if (y <= 4) {
-//                        return 150;
-//                    } else if (y < 7) {
-//                        return 300;
-//                    } else {
-//                        return 200;
-//                    }
-//                }
-//            case ELEPHANT:
-//            case COUNSELOR:
-//                return 150;
-//            default:
-//                throw new IllegalArgumentException();
-//        }
-//    }
 
     /**
      * 返回棋盘上某一方的棋子数量

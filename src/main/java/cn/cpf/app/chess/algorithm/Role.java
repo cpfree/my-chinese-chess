@@ -23,8 +23,8 @@ public enum Role {
             if (to.x > 5 || to.x < 3) {
                 return false;
             }
+            // 此处默认 Place 的 y 在 [0,9] 之间。
             if (Part.RED == part) {
-                // && to.y < 9;
                 return to.y >= 7;
             } else {
                 return to.y <= 2;
@@ -36,7 +36,6 @@ public enum Role {
             AnalysisBean analysisBean = new AnalysisBean(pieces);
             final int x = place.x;
             final int y = place.y;
-            // TODO 待优化
             final MyList<Place> list = ListPool.localPool().getAPlaceList(4);
             // x轴移动
             Place oppoBossPlace = analysisBean.getOppoBossPlace(part);
@@ -81,11 +80,6 @@ public enum Role {
                 }
             }
             return list;
-        }
-
-        @Override
-        public int getScore(Piece[][] chessPieces, Place place) {
-            return 100;
         }
     }),
     COUNSELOR(new Rule() {
@@ -134,11 +128,6 @@ public enum Role {
                 list.add(Place.of(5, yCenter));
             }
             return list;
-        }
-
-        @Override
-        public int getScore(Piece[][] chessPieces, Place place) {
-            return 100;
         }
 
     }), ELEPHANT(new Rule() {
@@ -228,6 +217,7 @@ public enum Role {
         }
 
         @Override
+        @SuppressWarnings("java:S135")
         public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
             final int xInit = place.x;
             final int yInit = place.y;
@@ -281,18 +271,21 @@ public enum Role {
     }), CANNON(new Rule() {
         @Override
         public boolean check(Piece[][] pieces, Part part, Place from, Place to) {
+            if (from == to) {
+                return false;
+            }
             if (pieces[to.x][to.y] == null) {
-                if (to.x == from.x && to.y != from.y) {
+                if (to.x == from.x) {
                     return ArrayUtils.nullInMiddle(pieces[from.x], to.y, from.y);
                 }
-                if (to.x != from.x && to.y == from.y) {
+                if (to.y == from.y) {
                     return ArrayUtils.nullInMiddle(pieces, to.y, to.x, from.x);
                 }
             } else {
-                if (to.x == from.x && to.y != from.y) {
+                if (to.x == from.x) {
                     return ArrayUtils.oneInMiddle(pieces[from.x], to.y, from.y);
                 }
-                if (to.x != from.x && to.y == from.y) {
+                if (to.y == from.y) {
                     return ArrayUtils.oneInMiddle(pieces, to.y, to.x, from.x);
                 }
             }
@@ -300,6 +293,7 @@ public enum Role {
         }
 
         @Override
+        @SuppressWarnings({"java:S135", "java:S3626"})
         public MyList<Place> find(Piece[][] pieces, Part part, Place place) {
             final int xInit = place.x;
             final int yInit = place.y;
@@ -321,7 +315,6 @@ public enum Role {
                         continue;
                     }
                     kong = true;
-                    continue;
                 }
             }
             kong = false;
@@ -341,7 +334,6 @@ public enum Role {
                         continue;
                     }
                     kong = true;
-                    continue;
                 }
             }
             kong = false;
@@ -361,7 +353,6 @@ public enum Role {
                         continue;
                     }
                     kong = true;
-                    continue;
                 }
             }
             kong = false;
@@ -381,7 +372,6 @@ public enum Role {
                         continue;
                     }
                     kong = true;
-                    continue;
                 }
             }
             return list;

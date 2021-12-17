@@ -1,6 +1,5 @@
 package cn.cpf.app.chess.inter;
 
-import java.io.Closeable;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -13,7 +12,7 @@ import java.util.function.Predicate;
  * @author CPF
  * @since 1.0
  **/
-public interface MyList<E> extends List<E>, Closeable {
+public interface MyList<E> extends List<E>, AutoCloseable {
 
     Object[] eleTemplateDate();
 

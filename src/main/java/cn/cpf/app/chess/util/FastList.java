@@ -4,7 +4,6 @@ import cn.cpf.app.chess.inter.MyList;
 import com.github.cosycode.common.lang.ShouldNotHappenException;
 import com.github.cosycode.common.util.common.ArrUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -70,7 +69,7 @@ public class FastList<E> implements MyList<E>, Collection<E> {
         return elementData;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void sort(Comparator<? super E> c) {
         Arrays.sort(elementData, 0, size, (Comparator) c);
@@ -86,7 +85,7 @@ public class FastList<E> implements MyList<E>, Collection<E> {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         ListPool.localPool().clearAndPushToPool(this);
     }
 

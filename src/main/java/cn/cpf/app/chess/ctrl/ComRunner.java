@@ -1,6 +1,5 @@
 package cn.cpf.app.chess.ctrl;
 
-import cn.cpf.app.chess.algorithm.AlphaBeta;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.PlayerType;
 import cn.cpf.app.chess.modal.StepBean;

@@ -80,7 +80,7 @@ public class AppContext {
         long t = System.currentTimeMillis();
         Piece[][] pieces = situation.genePiece();
         pieces = ArrayUtils.deepClone(pieces);
-        Set<StepBean> evaluatedPlaceSet = null;
+        final Set<StepBean> evaluatedPlaceSet;
         if (Application.config().isParallel()) {
             evaluatedPlaceSet = AlphaBeta.getEvaluatedPlaceWithParallel(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
         } else {

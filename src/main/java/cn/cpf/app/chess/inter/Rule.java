@@ -78,14 +78,4 @@ public interface Rule {
         }
     }
 
-    /**
-     * 1. 每个棋子本身的价值
-     * 3. 棋子的地理优势
-     * 2. 棋子评分
-     * 1. 棋子嘴边多少food
-     * 2. 棋子相关的点, 有影响的有多少点
-     */
-    default int getScore(Piece[][] chessPieces, Place place) {
-        return 0;
-    }
 }

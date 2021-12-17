@@ -5,6 +5,7 @@ import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepBean;
 import com.github.cosycode.common.ext.bean.DoubleBean;
+import com.github.cosycode.common.lang.ShouldNotHappenException;
 import com.github.cosycode.common.util.common.ThreadUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
- * <b>Description : </b>
+ * <b>Description : </b> 与 MyList 结合使用，使得List，可以重复利用
  * <p>
  * <b>created in </b> 2021/12/16
  * </p>
@@ -29,18 +30,30 @@ import java.util.concurrent.ArrayBlockingQueue;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ListPool {
 
+    /**
+     * 将 ListPool 再次集中缓存, 重复利用
+     */
     private static final ArrayBlockingQueue<ListPool> blockingQueue = new ArrayBlockingQueue<>(30);
-
+    /**
+     * 每个线程一个 ListPool
+     */
     private static final ThreadLocal<ListPool> listThreadLocal = new ThreadLocal<>();
+    /**
+     * LinkedList 大小不超过 1， MyList&lt;Place> 大小不超过 17
+     */
+    private final LinkedList<MyList<Place>> placeList17 = new LinkedList<>();
+    /**
+     * 用于对 MyList&lt;StepBean> 进行排序
+     * LinkedList 大小不超过 1， MyList 大小同 MyList&lt;StepBean>
+     */
+    private final LinkedList<MyList<DoubleBean<Integer, StepBean>>> douList80 = new LinkedList<>();
+    /**
+     * 每个线程 用到的最大数量 等同于搜索深度，例如搜索深度为 8，则列表大小不超过 8个
+     * MyList&lt;StepBean> 的大小不超过 80
+     */
+    private final LinkedList<MyList<StepBean>> stepList80 = new LinkedList<>();
     @Getter
     private static final MyList<Place> emptyList = newList(0);
-    private final LinkedList<MyList<Place>> list1 = new LinkedList<>();
-    private final LinkedList<MyList<Place>> list3 = new LinkedList<>();
-    private final LinkedList<MyList<Place>> list4 = new LinkedList<>();
-    private final LinkedList<MyList<Place>> list8 = new LinkedList<>();
-    private final LinkedList<MyList<Place>> list17 = new LinkedList<>();
-    private final LinkedList<MyList<StepBean>> stepList80 = new LinkedList<>();
-    private final LinkedList<MyList<DoubleBean<Integer, StepBean>>> listDou80 = new LinkedList<>();
 
     public static void end() {
         ListPool listPool = listThreadLocal.get();
@@ -85,7 +98,7 @@ public class ListPool {
     }
 
     public MyList<DoubleBean<Integer, StepBean>> getADoubleBeanList() {
-        final MyList<DoubleBean<Integer, StepBean>> poll = listDou80.poll();
+        final MyList<DoubleBean<Integer, StepBean>> poll = douList80.poll();
         if (poll != null) {
             DebugInfo.incrementPollListCount();
             return poll;
@@ -95,18 +108,35 @@ public class ListPool {
         }
     }
 
-    public void clearAndPushToPool(MyList<?> list) {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void clearAndPushToPool(MyList list) {
         final int length = list.eleTemplateDate().length;
+        if (length == 17) {
+            placeList17.add(list);
+        } else if (length == 80) {
+            stepList80.add(list);
+        } else if (length == 81) {
+            douList80.add(list);
+        } else {
+            throw new ShouldNotHappenException();
+        }
     }
 
+    /**
+     * 从 pool 里面获取一个列表，pool 里面没有会自动新建
+     *
+     * @param capacity 建立列表的容量，保留字段
+     * @return 从pool获取的列表
+     */
+    @SuppressWarnings("unused")
     public MyList<Place> getAPlaceList(int capacity) {
-        final MyList<Place> pop = getSuitPool(capacity).poll();
+        final MyList<Place> pop = placeList17.poll();
         if (pop != null) {
             DebugInfo.incrementPollListCount();
             return pop;
         } else {
             DebugInfo.incrementNewListCount();
-            return newList(capacity);
+            return newList(17);
         }
     }
 
@@ -115,9 +145,8 @@ public class ListPool {
             return;
         }
         DebugInfo.incrementAddListCount();
-        LinkedList<MyList<Place>> pool = getSuitPool(list.eleTemplateDate().length);
         list.clear();
-        pool.add(list);
+        placeList17.add(list);
     }
 
     public void addListToStepBeanListPool(MyList<StepBean> list) {
@@ -129,33 +158,12 @@ public class ListPool {
     public void addListToDoubleBeanListPool(MyList<DoubleBean<Integer, StepBean>> list) {
         list.clear();
         DebugInfo.incrementAddListCount();
-        listDou80.add(list);
-    }
-
-    private LinkedList<MyList<Place>> getSuitPool(int capacity) {
-        if (capacity <= 1) {
-            return list1;
-        } else if (capacity <= 3) {
-            return list3;
-        } else if (capacity <= 4) {
-            return list4;
-        } else if (capacity <= 8) {
-            return list8;
-        } else {
-            return list17;
-        }
+        douList80.add(list);
     }
 
     @Override
     public String toString() {
-        return "ListPool{" +
-                "list1=" + list1.size() +
-                ", list3=" + list3.size() +
-                ", list4=" + list4.size() +
-                ", list8=" + list8.size() +
-                ", list17=" + list17.size() +
-                ", list50=" + stepList80.size() +
-                ", listDou50=" + listDou80.size() +
-                '}';
+        return "ListPool{" + "placeList17=" + placeList17.size() + ", douList80=" + douList80.size() + ", stepList80=" + stepList80.size() + '}';
     }
+
 }
