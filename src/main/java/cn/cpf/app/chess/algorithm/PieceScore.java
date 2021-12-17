@@ -5,6 +5,11 @@ import cn.cpf.app.chess.modal.Part;
 /**
  * <b>Description : </b>
  * <p>
+ *    <br/> 1. 每个棋子本身的价值
+ *    <br/> 2. 棋子的地理评分
+ * </p>
+ *
+ * <p>
  * <b>created in </b> 2021/12/5
  * </p>
  *
@@ -101,6 +106,11 @@ public enum PieceScore {
      */
     final int[] placeScores;
 
+    PieceScore(int existScore, int[] placeScores) {
+        this.existScore = existScore;
+        this.placeScores = placeScores;
+    }
+
     /**
      * @param part 棋盘方
      * @param x    坐标x
@@ -113,10 +123,5 @@ public enum PieceScore {
         } else {
             return placeScores[x * 10 + y];
         }
-    }
-
-    PieceScore(int existScore, int[] placeScores) {
-        this.existScore = existScore;
-        this.placeScores = placeScores;
     }
 }

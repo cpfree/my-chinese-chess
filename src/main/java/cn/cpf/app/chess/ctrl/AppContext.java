@@ -88,9 +88,11 @@ public class AppContext {
         }
         // 随机选择一个最好的一步
         int ran = new Random().nextInt(evaluatedPlaceSet.size());
-        log.info("evaluated Set == > {}", evaluatedPlaceSet);
         final StepBean stepBean = (StepBean) evaluatedPlaceSet.toArray()[ran];
-        log.info("evaluated == > {}", stepBean);
+        if (evaluatedPlaceSet.size() > 1) {
+            log.info("evaluated Set == > {}", evaluatedPlaceSet);
+            log.info("evaluated == > {}", stepBean);
+        }
         log.info("time: {}", (System.currentTimeMillis() - t));
         DebugInfo.logEnd();
         return stepBean;

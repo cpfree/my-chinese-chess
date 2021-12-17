@@ -29,7 +29,7 @@ public class SwingUtils {
      * 200px长度, 每5ms移动一次, 一次移动1px, 需要1s
      *
      * @param component 组件
-     * @param toPoint 移动位置
+     * @param toPoint   移动位置
      * @throws InterruptedException 移动时异常
      */
     public static void moveComp(Component component, Point toPoint) throws InterruptedException {

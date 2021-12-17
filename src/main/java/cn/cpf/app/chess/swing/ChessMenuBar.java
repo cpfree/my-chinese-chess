@@ -29,8 +29,8 @@ public class ChessMenuBar extends JMenuBar {
         addDebugMenu();
 
         addMenuToMenuBar("撤销", e -> new Thread(Application.context()::rollbackOneStep).start());
-        addMenuToMenuBar("撤销至开头", e -> new Thread(()-> {
-            while (Application.context().rollbackOneStep()){
+        addMenuToMenuBar("撤销至开头", e -> new Thread(() -> {
+            while (Application.context().rollbackOneStep()) {
                 Throws.con(500, Thread::sleep).logThrowable();
             }
         }).start());

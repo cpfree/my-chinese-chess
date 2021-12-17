@@ -11,7 +11,6 @@ import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -162,6 +161,7 @@ public class Situation {
 
     /**
      * 撤销一步棋
+     *
      * @return 撤掉的步骤记录
      */
     StepRecord rollbackOneStep() {
