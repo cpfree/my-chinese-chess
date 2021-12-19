@@ -39,6 +39,8 @@ public class AppContext {
     @Getter
     private final Situation situation;
 
+    private final Random random = new Random();
+
     AppContext(final BoardPanel boardPanel, final Situation situation) {
         this.situation = situation;
         this.boardPanel = boardPanel;
@@ -87,11 +89,14 @@ public class AppContext {
             evaluatedPlaceSet = AlphaBeta.getEvaluatedPlace(pieces, situation.getNextPart(), Application.config().getSearchDeepLevel());
         }
         // 随机选择一个最好的一步
-        int ran = new Random().nextInt(evaluatedPlaceSet.size());
-        final StepBean stepBean = (StepBean) evaluatedPlaceSet.toArray()[ran];
+        final StepBean stepBean;
         if (evaluatedPlaceSet.size() > 1) {
+            int ran = random.nextInt(evaluatedPlaceSet.size());
+            stepBean = (StepBean) evaluatedPlaceSet.toArray()[ran];
             log.info("evaluated Set == > {}", evaluatedPlaceSet);
             log.info("evaluated == > {}", stepBean);
+        } else {
+            stepBean = (StepBean) evaluatedPlaceSet.toArray()[0];
         }
         log.info("time: {}", (System.currentTimeMillis() - t));
         DebugInfo.logEnd();
@@ -100,6 +105,7 @@ public class AppContext {
 
     /**
      * 落子函数, 并附带落子后的胜负检查等操作逻辑.
+     * @return 获胜方, 如果有值表示获胜方已经产生, 无法继续执行, 如果为null 表示游戏可以继续.
      */
     public Part locatePiece(Place from, Place to) {
         Part part = situation.movePiece(from, to);
@@ -113,7 +119,7 @@ public class AppContext {
     }
 
     /**
-     * 撤销一步棋
+     * @return 返回 true: 撤销成功; 返回false: 撤销失败, 已经没有记录, 无法再继续撤销
      */
     public boolean rollbackOneStep() {
         final StepRecord stepRecord = situation.rollbackOneStep();
@@ -124,4 +130,21 @@ public class AppContext {
         }
         return stepRecord != null;
     }
+
+    /**
+     * AI 运行一次, 若有获胜方, 则返回获胜方
+     *
+     * @return 返回 true, 游戏可以继续, false: 已经有获胜方, 游戏结束.
+     */
+    public Part aiRunOneTime() {
+        final Part winner = situation.winner();
+        if (winner != null) {
+            log.warn("胜利方[{}]已经产生, 无法再次 AI 计算", winner);
+            return winner;
+        }
+        // 计算出下一步棋
+        StepBean evaluatedStepBean = this.computeStepBean();
+        return locatePiece(evaluatedStepBean.from, evaluatedStepBean.to);
+    }
+
 }

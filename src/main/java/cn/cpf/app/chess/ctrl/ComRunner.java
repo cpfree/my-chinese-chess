@@ -2,7 +2,6 @@ package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.PlayerType;
-import cn.cpf.app.chess.modal.StepBean;
 import cn.cpf.app.chess.swing.BoardPanel;
 import com.github.cosycode.common.thread.CtrlLoopThreadComp;
 import lombok.Getter;
@@ -38,7 +37,7 @@ public class ComRunner {
     public ComRunner(BoardPanel boardPanel) {
         this.boardPanel = boardPanel;
         this.comRunThread = CtrlLoopThreadComp.ofRunnable(this::loop)
-                .setContinueIfException(true)
+                .catchFun(CtrlLoopThreadComp.CATCH_FUNCTION_CONTINUE)
                 .setMillisecond(Application.config().getComIntervalTime())
                 .setName("COM-RUN");
     }
@@ -91,10 +90,8 @@ public class ComRunner {
         if (forceRunTime <= 0 && !comRunnable) {
             stopRun();
         }
-        final AppContext instance = Application.context();
         try {
-            StepBean evaluatedStepBean = instance.computeStepBean();
-            Part part = instance.locatePiece(evaluatedStepBean.from, evaluatedStepBean.to);
+            final Part part = Application.context().aiRunOneTime();
             // 判断是否结束
             if (part != null) {
                 stopRun();
@@ -105,7 +102,7 @@ public class ComRunner {
             new Thread(() -> JOptionPane.showMessageDialog(boardPanel, e.getMessage(), e.toString(), JOptionPane.ERROR_MESSAGE)).start();
         }
         // 如果下一步棋手不是 AI, 则暂停
-        if (!PlayerType.COM.equals(Application.config().getPlayerType(instance.getSituation().getNextPart()))) {
+        if (!PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
             stopRun();
             return;
         }

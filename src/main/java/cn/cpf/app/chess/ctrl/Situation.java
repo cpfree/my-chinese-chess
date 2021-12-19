@@ -8,6 +8,7 @@ import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepRecord;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessPiece;
+import com.github.cosycode.common.lang.ShouldNotHappenException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -123,6 +124,35 @@ public class Situation {
             }
         }
         return pieces;
+    }
+
+    /**
+     * 如果已经有胜利方, 则返回胜利方, 否则返回 null
+     *
+     * @return 胜利方
+     */
+    public Part winner(){
+        boolean isRedBossExist = false;
+        boolean isBlankBossExist = false;
+        for (int x = 0; x < ChessDefined.RANGE_X; x++) {
+            for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
+                final ChessPiece chessPiece = pieceArrays[x][y];
+                if (chessPiece != null && chessPiece.piece.role == Role.BOSS) {
+                    if (chessPiece.piece.part == Part.BLACK) {
+                        isBlankBossExist = true;
+                    } else {
+                        isRedBossExist = true;
+                    }
+                }
+            }
+        }
+        if (isRedBossExist) {
+            return isBlankBossExist ? null: Part.RED;
+        } else if (isBlankBossExist) {
+            return Part.BLACK;
+        } else {
+            throw new ShouldNotHappenException("两个 Boss 均不存在");
+        }
     }
 
     /**
