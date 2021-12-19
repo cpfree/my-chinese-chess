@@ -45,6 +45,7 @@ public class SwingUtils {
             component.setLocation((int) (fromPoint.x + xSub * p), (int) (fromPoint.y + ySub * p));
             Thread.sleep(INTERVAL);
         }
+        component.setLocation(toPoint.x, toPoint.y);
     }
 
 

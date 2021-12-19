@@ -498,7 +498,13 @@ public enum Role {
     }
 
     /**
-     * 检查棋子是否符合规则
+     * 检查棋子是否符合规则(当前 part 方, 从 from 走到 to)
+     *
+     * @param piece 棋盘棋子
+     * @param part 当前走棋方
+     * @param from from
+     * @param to to
+     * @return true: 符合规则, false: 不符合规则
      */
     public boolean check(Piece[][] piece, Part part, Place from, Place to) {
         final AnalysisBean analysisBean = new AnalysisBean(piece);
@@ -507,7 +513,7 @@ public enum Role {
                 return false;
             }
         } else {
-            if (analysisBean.isBossF2FAndWithOnlyThePlaceInMiddle(from)) {
+            if (analysisBean.isBossF2FAndWithOnlyThePlaceInMiddle(from) && !analysisBean.isBossF2FAndWithThePlaceInMiddle(to)) {
                 return false;
             }
         }

@@ -66,7 +66,9 @@ public class ListPool {
             log.debug("listThreadLocal.remove() to blockingQueue || threadId ==> {}, end monitor ListPool : {} ==> {}", Thread.currentThread().getId(), listPool.hashCode(), listPool);
         }
         listThreadLocal.remove();
-        blockingQueue.add(listPool);
+        if (listPool != null) {
+            blockingQueue.add(listPool);
+        }
     }
 
     public static ListPool localPool() {

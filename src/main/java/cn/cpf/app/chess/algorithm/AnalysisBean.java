@@ -246,6 +246,12 @@ public class AnalysisBean {
         }
         return ArrayUtils.oneInMiddle(pieces[redBoss.x], redBoss.y, blackBoss.y);
     }
+    /**
+     * @return true : 当前位置在 两个boss 中间(包含boss的位置)
+     */
+    public boolean isBossF2FAndWithThePlaceInMiddle(Place place) {
+        return redBoss.x == blackBoss.x && place.x == redBoss.x && place.y <= redBoss.y && place.y >= blackBoss.y;
+    }
 
     /**
      * @return boss 是否为面对面

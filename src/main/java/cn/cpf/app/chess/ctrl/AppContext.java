@@ -34,7 +34,7 @@ public class AppContext {
     private final BoardPanel boardPanel;
 
     @Getter
-    private final ComRunner comRunner;
+    private final CommandExecutor commandExecutor;
 
     @Getter
     private final Situation situation;
@@ -44,7 +44,7 @@ public class AppContext {
     AppContext(final BoardPanel boardPanel, final Situation situation) {
         this.situation = situation;
         this.boardPanel = boardPanel;
-        comRunner = new ComRunner(boardPanel);
+        commandExecutor = new CommandExecutor(boardPanel);
     }
 
     /**
@@ -78,6 +78,7 @@ public class AppContext {
      * @return AI 计算下一步落子位置
      */
     public StepBean computeStepBean() {
+        log.info("com run start");
         DebugInfo.initAlphaBetaTime();
         long t = System.currentTimeMillis();
         Piece[][] pieces = situation.genePiece();
@@ -100,6 +101,7 @@ public class AppContext {
         }
         log.info("time: {}", (System.currentTimeMillis() - t));
         DebugInfo.logEnd();
+        log.info("com run stop");
         return stepBean;
     }
 

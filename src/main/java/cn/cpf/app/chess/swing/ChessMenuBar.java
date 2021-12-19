@@ -3,10 +3,11 @@ package cn.cpf.app.chess.swing;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.ctrl.AppConfig;
 import cn.cpf.app.chess.ctrl.Application;
+import cn.cpf.app.chess.ctrl.CommandExecutor;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.modal.PlayerType;
-import com.github.cosycode.common.thread.CtrlLoopThreadComp;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,39 +21,23 @@ import java.util.List;
  *
  * @author CPF
  **/
+@Slf4j
 public class ChessMenuBar extends JMenuBar {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 用于撤销事件
-     */
-    private transient CtrlLoopThreadComp rollbackCtrlLoopThread = null;
-
-    public synchronized CtrlLoopThreadComp getRollBackClThread() {
-        if (rollbackCtrlLoopThread == null) {
-            rollbackCtrlLoopThread = CtrlLoopThreadComp
-                    .ofSupplier(Application.context()::rollbackOneStep)
-                    .setName("撤销Step事件")
-                    .setMillisecond(300)
-                    .falseFun(CtrlLoopThreadComp.CtrlComp::pause)
-                    .catchFun(CtrlLoopThreadComp.CtrlComp::logException);
-            rollbackCtrlLoopThread.start();
-        }
-        return rollbackCtrlLoopThread;
+    public void sendCommand(CommandExecutor.CommandType commandType) {
+        Application.context().getCommandExecutor().sendCommand(commandType);
     }
 
     public ChessMenuBar() {
         addSettingMenu();
         addDebugMenu();
-        addMenuToMenuBar("撤销一步", e -> getRollBackClThread().pauseAfterLoopTime(1));
-        addMenuToMenuBar("持续撤销", e -> getRollBackClThread().startOrWake());
-        addMenuToMenuBar("终止撤销", e -> getRollBackClThread().pause());
-        addMenuToMenuBar("AI计算一次", e -> Application.context().getComRunner().runOneTime());
+        addMenuToMenuBar("终止撤销或AI计算", e -> sendCommand(CommandExecutor.CommandType.SuspendCallBackOrAiRun));
     }
 
     private void addSettingMenu() {
-        JMenu muSetting = new JMenu("setting");
+        JMenu muSetting = new JMenu("设置");
         add(muSetting);
 
         addItemToMenu(muSetting, "重新开局", e -> {
@@ -126,10 +111,14 @@ public class ChessMenuBar extends JMenuBar {
     }
 
     private void addDebugMenu() {
-        JMenu muDebug = new JMenu("Debug");
+        JMenu muDebug = new JMenu("功能");
         add(muDebug);
-        addItemToMenu(muDebug, "COM 运行", e -> Application.context().getComRunner().runEnable());
-        addItemToMenu(muDebug, "AI停止计算(计算完这一次)", e -> Application.context().getComRunner().stopRun());
+        addItemToMenu(muDebug,"终止撤销或AI计算", e -> sendCommand(CommandExecutor.CommandType.SuspendCallBackOrAiRun));
+        addItemToMenu(muDebug,"撤销一步", e -> sendCommand(CommandExecutor.CommandType.CallBackOneTime));
+        addItemToMenu(muDebug,"持续撤销", e -> sendCommand(CommandExecutor.CommandType.SustainCallBack));
+        addItemToMenu(muDebug,"AI计算一次", e -> sendCommand(CommandExecutor.CommandType.AiRunOneTime));
+        addItemToMenu(muDebug,"AI持续运算", e -> sendCommand(CommandExecutor.CommandType.SustainAiRun));
+        addItemToMenu(muDebug,"COM角色运行", e -> sendCommand(CommandExecutor.CommandType.SustainAiRunIfNextIsAi));
     }
 
     /**
