@@ -5,7 +5,7 @@ import cn.cpf.app.chess.ctrl.AppConfig;
 import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.modal.PlayerType;
-import com.github.cosycode.common.ext.hub.Throws;
+import com.github.cosycode.common.thread.CtrlLoopThreadComp;
 import lombok.NonNull;
 
 import javax.swing.*;
@@ -24,16 +24,30 @@ public class ChessMenuBar extends JMenuBar {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 用于撤销事件
+     */
+    private transient CtrlLoopThreadComp rollbackCtrlLoopThread = null;
+
+    public synchronized CtrlLoopThreadComp getRollBackClThread() {
+        if (rollbackCtrlLoopThread == null) {
+            rollbackCtrlLoopThread = CtrlLoopThreadComp
+                    .ofSupplier(Application.context()::rollbackOneStep)
+                    .setName("撤销Step事件")
+                    .setMillisecond(300)
+                    .falseFun(CtrlLoopThreadComp.CtrlComp::pause)
+                    .catchFun(CtrlLoopThreadComp.CtrlComp::logException);
+            rollbackCtrlLoopThread.start();
+        }
+        return rollbackCtrlLoopThread;
+    }
+
     public ChessMenuBar() {
         addSettingMenu();
         addDebugMenu();
-
-        addMenuToMenuBar("撤销", e -> new Thread(Application.context()::rollbackOneStep).start());
-        addMenuToMenuBar("撤销至开头", e -> new Thread(() -> {
-            while (Application.context().rollbackOneStep()) {
-                Throws.con(500, Thread::sleep).logThrowable();
-            }
-        }).start());
+        addMenuToMenuBar("撤销一步", e -> getRollBackClThread().pauseAfterLoopTime(1));
+        addMenuToMenuBar("持续撤销", e -> getRollBackClThread().startOrWake());
+        addMenuToMenuBar("终止撤销", e -> getRollBackClThread().pause());
         addMenuToMenuBar("AI计算一次", e -> Application.context().getComRunner().runOneTime());
     }
 
@@ -54,6 +68,15 @@ public class ChessMenuBar extends JMenuBar {
         muSetting.add(cm);
         // 初始化值
         cm.setState(Application.config().isCartoon());
+
+        muSetting.add(new JSeparator());
+
+        /* 添加 AI 计算模式选择框 */
+        JCheckBoxMenuItem aiCalcMod = new JCheckBoxMenuItem("多核并行计算");
+        addLambdaMouseListener(aiCalcMod, e -> Application.config().setParallel(aiCalcMod.getState()));
+        muSetting.add(aiCalcMod);
+        // 初始化值
+        aiCalcMod.setState(Application.config().isParallel());
 
         muSetting.add(new JSeparator());
         /* 添加游戏模式单选按钮组 */
@@ -87,9 +110,9 @@ public class ChessMenuBar extends JMenuBar {
         /* 设置难度单选按钮组 */
         ButtonGroup searchDeepBtnGroup = new ButtonGroup();
         final int searchDeepLevel = Application.config().getSearchDeepLevel();
-        JRadioButtonMenuItem rmDeep4 = new JRadioButtonMenuItem("DEEP-4", searchDeepLevel == 4);
-        JRadioButtonMenuItem rmDeep6 = new JRadioButtonMenuItem("DEEP-6", searchDeepLevel == 6);
-        JRadioButtonMenuItem rmDeep8 = new JRadioButtonMenuItem("DEEP-8", searchDeepLevel == 8);
+        JRadioButtonMenuItem rmDeep4 = new JRadioButtonMenuItem("搜索深度-4", searchDeepLevel == 4);
+        JRadioButtonMenuItem rmDeep6 = new JRadioButtonMenuItem("搜索深度-6", searchDeepLevel == 6);
+        JRadioButtonMenuItem rmDeep8 = new JRadioButtonMenuItem("搜索深度-8", searchDeepLevel == 8);
         addLambdaMouseListener(rmDeep4, e -> Application.config().setSearchDeepLevel(4));
         addLambdaMouseListener(rmDeep6, e -> Application.config().setSearchDeepLevel(6));
         addLambdaMouseListener(rmDeep8, e -> Application.config().setSearchDeepLevel(8));
@@ -100,7 +123,6 @@ public class ChessMenuBar extends JMenuBar {
         muSetting.add(rmDeep6);
         muSetting.add(rmDeep8);
         // 初始化
-
     }
 
     private void addDebugMenu() {
