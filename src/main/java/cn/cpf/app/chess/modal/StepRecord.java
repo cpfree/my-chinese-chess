@@ -1,6 +1,8 @@
 package cn.cpf.app.chess.modal;
 
+import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 import java.util.Date;
@@ -19,7 +21,6 @@ public class StepRecord {
      * 走棋方
      */
     private final Part part;
-    private final int step;
     /**
      * 移动棋子
      */
@@ -27,11 +28,10 @@ public class StepRecord {
     private final Place from;
     private final Place to;
     private final Date date;
-    private final Piece eatenPiece;
+    private final ChessPiece eatenPiece;
 
-    public StepRecord(Part part, int step, Piece piece, Place from, Place to, Piece eatenPiece) {
+    public StepRecord(@NonNull Part part, @NonNull Piece piece, @NonNull Place from, @NonNull Place to, ChessPiece eatenPiece) {
         this.part = part;
-        this.step = step;
         this.piece = piece;
         this.from = from;
         this.to = to;

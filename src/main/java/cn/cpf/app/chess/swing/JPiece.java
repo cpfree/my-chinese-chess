@@ -46,18 +46,12 @@ public class JPiece {
     }
 
     public JPiece(Piece piece, Place place) {
-        comp = new JLabel();
-        comp.setSize(ChessDefined.PIECE_WIDTH, ChessDefined.PIECE_HEIGHT);
-        comp.setText(piece.name().replaceAll("Red|Black", ""));
+        this(piece.image, place);
+        comp.setText(piece.name());
         if (piece.part == Part.RED) {
             comp.setForeground(Color.red);
         } else {
             comp.setForeground(Color.black);
-        }
-        if (place == null) {
-            this.hide();
-        } else {
-            this.setPlace(place);
         }
     }
 

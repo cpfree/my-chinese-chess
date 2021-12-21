@@ -78,6 +78,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         this.removeAll();
         // 添加棋子
         situation.getPieceList().forEach(it -> add(it.getComp()));
+        situation.getSituationRecord().getEatenPieceList().forEach(it -> add(it.getComp()));
         // 初始化标记符
         traceMarker.initMarker();
         // 添加鼠标事件
@@ -143,7 +144,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         new Thread(() -> {
             Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
             if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
-                Application.context().getComRunner().runOneTime();
+                Application.context().aiRunOneTime();
             }
         }).start();
     }

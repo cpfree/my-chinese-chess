@@ -1,14 +1,14 @@
 package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.modal.Part;
-import cn.cpf.app.chess.modal.Piece;
-import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepRecord;
+import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.EmptyStackException;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -17,13 +17,18 @@ import java.util.List;
  * @author CPF
  * Date: 2020/3/19 13:56
  */
-public class SituationRecord {
+public class SituationRecord implements Serializable {
 
     /**
      * 历史记录
      */
     @Getter
-    private final List<StepRecord> list = new ArrayList<>();
+    private final LinkedList<StepRecord> records = new LinkedList<>();
+    /**
+     * 被吃的棋子列表
+     */
+    @Getter
+    private final transient LinkedList<ChessPiece> eatenPieceList = new LinkedList<>();
     /**
      * 黑棋当前走的步数
      */
@@ -35,28 +40,43 @@ public class SituationRecord {
     @Getter
     private int redStep;
 
-    void addRecord(@NonNull Part part, @NonNull Piece piece, @NonNull Place from, @NonNull Place to, Piece eatenPiece) {
-        if (Part.RED == part) {
+    public SituationRecord(List<StepRecord> records) {
+        if (records != null) {
+            records.forEach(this::addRecord);
+        }
+    }
+
+    public SituationRecord() {
+    }
+
+    public void addRecord(@NonNull StepRecord stepRecord) {
+        if (Part.RED == stepRecord.getPart()) {
             redStep++;
         } else {
             blackStep++;
         }
-        list.add(new StepRecord(part, list.size() + 1, piece, from, to, eatenPiece));
+        if (stepRecord.getEatenPiece() != null) {
+            eatenPieceList.add(stepRecord.getEatenPiece());
+        }
+        records.add(stepRecord);
     }
 
     /**
      * 弹出最新记录对象, 若列表中无元素, 则抛出异常
      */
-    StepRecord popRecord() {
-        if (list.isEmpty()) {
+    public StepRecord popRecord() {
+        final StepRecord stepRecord = records.pollLast();
+        if (stepRecord == null) {
             throw new EmptyStackException();
+        } else if (stepRecord.getEatenPiece() != null) {
+            final ChessPiece chessPiece = eatenPieceList.pollLast();
+            assert chessPiece == stepRecord.getEatenPiece();
         }
-        return list.remove(list.size() - 1);
+        return stepRecord;
     }
 
     int getTotalStep() {
-        return list.size();
+        return records.size();
     }
-
 
 }

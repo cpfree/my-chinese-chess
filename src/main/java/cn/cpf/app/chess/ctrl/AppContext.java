@@ -4,19 +4,11 @@ import cn.cpf.app.chess.algorithm.AlphaBeta;
 import cn.cpf.app.chess.algorithm.DebugInfo;
 import cn.cpf.app.chess.modal.*;
 import cn.cpf.app.chess.swing.BoardPanel;
-import cn.cpf.app.chess.swing.ChessPiece;
 import cn.cpf.app.chess.util.ArrayUtils;
-import com.google.gson.Gson;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -37,40 +29,22 @@ public class AppContext {
     private final CommandExecutor commandExecutor;
 
     @Getter
-    private final Situation situation;
+    private Situation situation;
 
     private final Random random = new Random();
 
-    AppContext(final BoardPanel boardPanel, final Situation situation) {
-        this.situation = situation;
+    AppContext(final BoardPanel boardPanel) {
         this.boardPanel = boardPanel;
         commandExecutor = new CommandExecutor(boardPanel);
     }
 
     /**
-     * 将当前场景存放至文件
-     *
-     * @param situation 场景对象
-     * @throws IOException 写入失败
-     */
-    public static void saveSituation(Situation situation) throws IOException {
-        String fileName = String.format("situation-%s-%s-%s", LocalDateTime.now(), situation.getSituationStartTime(), LocalDateTime.now());
-        String filePath = Objects.requireNonNull(Application.class.getResource("/"), "获取资源路径失败").getPath();
-        File file = new File(filePath + File.separator + fileName);
-        assert !file.exists() : "文件已存在";
-        try (FileWriter writer = new FileWriter(file)) {
-            writer.write(new Gson().toJson(situation));
-            writer.flush();
-        }
-    }
-
-    /**
      * 棋局初始化
      *
-     * @param list 棋子列表
+     * @param situation 棋局形势
      */
-    public void init(List<ChessPiece> list) {
-        situation.init(list, Application.config().getFirstPart());
+    public void init(Situation situation) {
+        this.situation = situation;
         boardPanel.init(situation);
     }
 

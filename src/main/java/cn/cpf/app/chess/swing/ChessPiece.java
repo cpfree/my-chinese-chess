@@ -17,7 +17,7 @@ public class ChessPiece extends JPiece {
     public final Piece piece;
 
     public ChessPiece(String name, Piece piece, Place place) {
-        super(piece.image, place);
+        super(piece, place);
         this.name = name;
         this.piece = piece;
     }

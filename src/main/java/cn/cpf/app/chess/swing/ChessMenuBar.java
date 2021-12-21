@@ -1,17 +1,25 @@
 package cn.cpf.app.chess.swing;
 
 import cn.cpf.app.chess.conf.ChessDefined;
-import cn.cpf.app.chess.ctrl.AppConfig;
-import cn.cpf.app.chess.ctrl.Application;
-import cn.cpf.app.chess.ctrl.CommandExecutor;
+import cn.cpf.app.chess.ctrl.*;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.modal.PlayerType;
+import cn.cpf.app.chess.util.JsonUtils;
+import com.github.cosycode.common.util.io.FileSystemUtils;
+import com.github.cosycode.common.util.io.IoUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <b>Description : </b> 面板菜单
@@ -42,7 +50,49 @@ public class ChessMenuBar extends JMenuBar {
 
         addItemToMenu(muSetting, "重新开局", e -> {
             List<ChessPiece> list = ChessDefined.geneDefaultPieceSituation();
-            Application.context().init(list);
+            Application.context().init(new Situation(list, new SituationRecord(), Application.config().getFirstPart(), LocalDateTime.now()));
+        });
+
+        muSetting.add(new JSeparator());
+
+        addItemToMenu(muSetting, "保存棋局", e -> {
+            try {
+                Situation situation = Application.context().getSituation();
+                final String str = JsonUtils.toJson(situation);
+                String fileName = String.format("situation-%s-%s.chess.bin", situation.getSituationStartTime().toEpochSecond(ZoneOffset.of("+8")), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd-HHmmss")));
+                String filePath = Objects.requireNonNull(Application.class.getResource("/"), "获取资源路径失败").getPath();
+                final File saveDir = new File(filePath + File.separator + "save");
+                FileSystemUtils.insureFileDirExist(saveDir);
+                File file = new File(saveDir.getPath() + File.separator + fileName);
+                assert !file.exists() : "文件已存在";
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(str);
+                    writer.flush();
+                }
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+
+        addItemToMenu(muSetting, "加载棋局", e -> {
+            String filePath = Objects.requireNonNull(Application.class.getResource("/"), "获取资源路径失败").getPath();
+            File file = new File(filePath + "save/");
+            if (!file.exists() || !file.isDirectory()) {
+                file = file.getParentFile();
+            }
+            JFileChooser jfc = new JFileChooser(file);
+            jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            jfc.showOpenDialog(muSetting);
+            File f = jfc.getSelectedFile();
+            if (f != null) {
+                try {
+                    final String json = IoUtils.readFile(f).trim();
+                    final Situation situation = JsonUtils.fromJson(json, Situation.class);
+                    Application.context().init(situation);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            }
         });
 
         muSetting.add(new JSeparator());
@@ -113,12 +163,12 @@ public class ChessMenuBar extends JMenuBar {
     private void addDebugMenu() {
         JMenu muDebug = new JMenu("功能");
         add(muDebug);
-        addItemToMenu(muDebug,"终止撤销或AI计算", e -> sendCommand(CommandExecutor.CommandType.SuspendCallBackOrAiRun));
-        addItemToMenu(muDebug,"撤销一步", e -> sendCommand(CommandExecutor.CommandType.CallBackOneTime));
-        addItemToMenu(muDebug,"持续撤销", e -> sendCommand(CommandExecutor.CommandType.SustainCallBack));
-        addItemToMenu(muDebug,"AI计算一次", e -> sendCommand(CommandExecutor.CommandType.AiRunOneTime));
-        addItemToMenu(muDebug,"AI持续运算", e -> sendCommand(CommandExecutor.CommandType.SustainAiRun));
-        addItemToMenu(muDebug,"COM角色运行", e -> sendCommand(CommandExecutor.CommandType.SustainAiRunIfNextIsAi));
+        addItemToMenu(muDebug, "终止撤销或AI计算", e -> sendCommand(CommandExecutor.CommandType.SuspendCallBackOrAiRun));
+        addItemToMenu(muDebug, "撤销一步", e -> sendCommand(CommandExecutor.CommandType.CallBackOneTime));
+        addItemToMenu(muDebug, "持续撤销", e -> sendCommand(CommandExecutor.CommandType.SustainCallBack));
+        addItemToMenu(muDebug, "AI计算一次", e -> sendCommand(CommandExecutor.CommandType.AiRunOneTime));
+        addItemToMenu(muDebug, "AI持续运算", e -> sendCommand(CommandExecutor.CommandType.SustainAiRun));
+        addItemToMenu(muDebug, "COM角色运行", e -> sendCommand(CommandExecutor.CommandType.SustainAiRunIfNextIsAi));
     }
 
     /**

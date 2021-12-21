@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -55,10 +56,10 @@ public class Application {
                 frame.setVisible(true);
                 // 获取配置棋子
                 BoardPanel boardPanel = (BoardPanel) ((ChessPanel) frame.getContentPane()).getBoardPanel();
-                Situation situation = new Situation();
-                appContext = new AppContext(boardPanel, situation);
                 List<ChessPiece> list = ChessDefined.geneDefaultPieceSituation();
-                appContext.init(list);
+                Situation situation = new Situation(list, new SituationRecord(), Application.config().getFirstPart(), LocalDateTime.now());
+                appContext = new AppContext(boardPanel);
+                appContext.init(situation);
             } catch (Exception e) {
                 log.error("", e);
             }

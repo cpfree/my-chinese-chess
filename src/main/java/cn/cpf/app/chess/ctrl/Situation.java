@@ -8,11 +8,13 @@ import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepRecord;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessPiece;
+import cn.cpf.app.chess.util.JsonUtils;
 import com.github.cosycode.common.lang.ShouldNotHappenException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,62 +31,60 @@ import java.util.Optional;
  * Date: 2020/3/18 14:22
  */
 @Slf4j
-public class Situation {
+public class Situation implements Serializable {
 
-    @Getter
-    private LocalDateTime situationStartTime;
-    /**
-     * 活着的棋子列表
-     */
-    @Getter
-    private List<ChessPiece> pieceList;
-    /**
-     * 被吃的棋子列表
-     */
-    @Getter
-    private List<ChessPiece> eatenPieceList;
+    private static final long serialVersionUID = 1L;
+
     /**
      * 棋子数组
      */
-    private ChessPiece[][] pieceArrays;
+    private final transient ChessPiece[][] pieceArrays;
     /**
      * 红方boss, 单独标出
      */
     @Getter
-    private ChessPiece redBoss;
+    private transient ChessPiece redBoss;
     /**
      * 黑方boss, 单独标出
      */
     @Getter
-    private ChessPiece blackBoss;
+    private transient ChessPiece blackBoss;
 
     @Getter
-    private int redPieceNum;
+    private transient int redPieceNum;
 
     @Getter
-    private int blackPieceNum;
+    private transient int blackPieceNum;
     /**
      * 下棋记录
      */
-    private SituationRecord situationRecord;
+    @Getter
+    private final SituationRecord situationRecord;
+    @Getter
+    private final LocalDateTime situationStartTime;
+    /**
+     * 活着的棋子列表
+     */
+    @Getter
+    @SuppressWarnings("java:S1948")
+    private final List<ChessPiece> pieceList;
     /**
      * 下一步行走的势力
      */
     @Getter
     private Part nextPart;
 
-    void init(@NonNull List<ChessPiece> list, @NonNull Part nextPart) {
+    public Situation(@NonNull List<ChessPiece> list, @NonNull SituationRecord situationRecord, @NonNull Part nextPart, @NonNull LocalDateTime dateTime) {
+        this.situationRecord = situationRecord;
+        this.nextPart = nextPart;
+        this.situationStartTime = dateTime;
         // 成员变量初始化
-        eatenPieceList = new ArrayList<>();
         pieceList = new ArrayList<>(list.size());
         pieceArrays = new ChessPiece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
         redBoss = null;
         blackBoss = null;
         redPieceNum = 0;
         blackPieceNum = 0;
-        situationRecord = new SituationRecord();
-        // 获取先手方配置信息
-        this.nextPart = nextPart;
         // 成员变量赋值
         pieceList.addAll(list);
         list.forEach(it -> {
@@ -103,7 +103,6 @@ public class Situation {
                 }
             }
         });
-        situationStartTime = LocalDateTime.now();
     }
 
     public ChessPiece getChessPiece(@NonNull Place place) {
@@ -131,7 +130,7 @@ public class Situation {
      *
      * @return 胜利方
      */
-    public Part winner(){
+    public Part winner() {
         boolean isRedBossExist = false;
         boolean isBlankBossExist = false;
         for (int x = 0; x < ChessDefined.RANGE_X; x++) {
@@ -147,7 +146,7 @@ public class Situation {
             }
         }
         if (isRedBossExist) {
-            return isBlankBossExist ? null: Part.RED;
+            return isBlankBossExist ? null : Part.RED;
         } else if (isBlankBossExist) {
             return Part.BLACK;
         } else {
@@ -169,7 +168,6 @@ public class Situation {
         // 判断是否是吃子, 如果棋子被吃掉, 则将棋子移动列表
         if (eatenPiece != null) {
             pieceList.remove(eatenPiece);
-            eatenPieceList.add(eatenPiece);
             // ui 隐藏
             log.info("move {} -> {}, {} eat {}", from, to, fromPiece.name, eatenPiece.name);
         }
@@ -182,7 +180,7 @@ public class Situation {
             eatenPiece.hide();
         }
         // 添加记录
-        situationRecord.addRecord(nextPart, fromPiece.piece, from, to, eatenPiece == null ? null : eatenPiece.piece);
+        situationRecord.addRecord(new StepRecord(nextPart, fromPiece.piece, from, to, eatenPiece));
         // 变更势力
         nextPart = Part.getOpposite(nextPart);
         // 开额外线程判断是否胜利, 或连将
@@ -196,7 +194,7 @@ public class Situation {
      */
     StepRecord rollbackOneStep() {
         Objects.requireNonNull(situationRecord, "situationRecord shouldn't be null");
-        List<StepRecord> list = situationRecord.getList();
+        List<StepRecord> list = situationRecord.getRecords();
         if (list.isEmpty()) {
             log.warn("步骤历史记录为空, 已经回退到起始状态!");
             return null;
@@ -205,7 +203,7 @@ public class Situation {
         final StepRecord stepRecord = situationRecord.popRecord();
         final Place from = stepRecord.getFrom();
         final Place to = stepRecord.getTo();
-        final Piece eatenPiece = stepRecord.getEatenPiece();
+        final ChessPiece eatenPiece = stepRecord.getEatenPiece();
         Optional.ofNullable(pieceArrays[from.x][from.y]).ifPresent(e -> {
             throw new IllegalStateException("此处不该有棋子: " + e);
         });
@@ -213,19 +211,13 @@ public class Situation {
         final ChessPiece movePiece = getChessPiece(to);
         pieceArrays[from.x][from.y] = movePiece;
         /* 若有被吃掉的棋子, 则复活, 移动列表 */
-        final ChessPiece chessPiece;
         if (eatenPiece != null) {
-            final Optional<ChessPiece> any = eatenPieceList.stream().filter(it -> it.piece.equals(eatenPiece)).findAny();
-            chessPiece = any.orElseThrow(() -> new RuntimeException("被吃的棋子列表里面没有对应的棋子"));
-            pieceList.add(chessPiece);
-            eatenPieceList.remove(chessPiece);
-        } else {
-            chessPiece = null;
+            pieceList.add(eatenPiece);
         }
-        pieceArrays[to.x][to.y] = chessPiece;
+        pieceArrays[to.x][to.y] = eatenPiece;
         // ui移动棋子放到最后面, 先显示被吃掉的棋子后移动
         if (eatenPiece != null) {
-            chessPiece.setPlaceAndShow(to);
+            eatenPiece.setPlaceAndShow(to);
         }
         movePiece.movePlace(from);
         // 变更势力
@@ -233,4 +225,8 @@ public class Situation {
         return stepRecord;
     }
 
+    @Override
+    public String toString() {
+        return "Situation:" + hashCode() + "=" + JsonUtils.toJson(this);
+    }
 }
