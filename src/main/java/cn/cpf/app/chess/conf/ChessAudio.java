@@ -1,15 +1,12 @@
 package cn.cpf.app.chess.conf;
 
-import cn.cpf.app.chess.swing.ChessPiece;
 import cn.cpf.app.chess.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import sun.audio.AudioData;
 import sun.audio.AudioDataStream;
 import sun.audio.AudioPlayer;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 
 /**
  * <b>Description : </b> 象棋游戏播放类
@@ -78,18 +75,14 @@ public enum ChessAudio {
         if (audioData == null) {
             synchronized (this) {
                 if (audioData == null) {
-                    final String name = "/wave/" + tag + ".wav";
-                    final URL resource = ChessPiece.class.getResource(name);
+                    final String name = "wave/" + tag + ".wav";
                     try {
-                        if (resource == null) {
-                            throw new FileNotFoundException("未发现音频文件 : " + name);
-                        }
-                        final byte[] bytes = Utils.readFile(resource.getPath());
+                        final byte[] bytes = Utils.readFromResource(name);
+                        log.info("读取音频文件 " + bytes.length);
                         audioData = new AudioData(bytes);
-                    } catch (FileNotFoundException e) {
-                        log.error("", e);
                     } catch (IOException e) {
                         log.error("IO 读取异常", e);
+                        audioData = new AudioData(new byte[0]);
                     }
                 }
             }
