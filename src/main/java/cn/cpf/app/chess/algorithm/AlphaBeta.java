@@ -20,16 +20,21 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * <b>Description : </b> AI 负极大值搜索算法
+ * <p>
+ * <br>对给定的盘面用一个分值来评估，这个评估值永远是从一方（搜索程序）来评价的，红方有利时给一个正数，黑方有利时给一个负数。
+ * <br>（通常把它称为Max）看来，分值大的数表示对己方有利，而对于对方Min来说，它会选择分值小的着法。
+ * <br>
+ * <br>用Negamax风格来描述的AlphaBeta中的评估函数，对轮到谁走棋是敏感的。
+ * <br>在Minimax风格的AlphaBeta算法中，轮红方走棋时，评估值为 100，轮黑方走棋评估值仍是100。
+ * <br>但在Negamax风格的AlphaBeta算法中，轮红方走棋时，评估值为 100，轮黑方走棋时评估值要为-100。
+ * </p>
+ * <p>
+ * <b>created in </b> 2017/12/22
+ * </p>
+ *
  * @author CPF
- * 1.双方都按自己认为的最佳着法行棋.
- * <p>
- * 对给定的盘面用一个分值来评估，这个评估值永远是从一方（搜索程序）来评价的，红方有利时给一个正数，黑方有利时给一个负数。
- * （通常把它称为Max）看来，分值大的数表示对己方有利，而对于对方Min来说，它会选择分值小的着法。
- * <p>
- * 用Negamax风格来描述的AlphaBeta中的评估函数，对轮到谁走棋是敏感的。
- * 在Minimax风格的AlphaBeta算法中，轮红方走棋时，评估值为 100，轮黑方走棋评估值仍是100。
- * 但在Negamax风格的AlphaBeta算法中，轮红方走棋时，评估值为 100，轮黑方走棋时评估值要为-100。
- */
+ **/
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class AlphaBeta {
@@ -150,7 +155,7 @@ public class AlphaBeta {
 
 
     /**
-     * 负极大值搜索算法
+     * 负极大值搜索算法(不带剪枝算法)
      *
      * @param analysisBean 局势分析对象
      * @param curPart      当前走棋方
@@ -331,11 +336,11 @@ public class AlphaBeta {
         // 下一深度
         final int nextDeep = deep - 1;
         // 2. 生成待选的列表，就是可以下子的列表
-        MyList<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
+        final MyList<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
 
         final Object[] objects = stepBeanList.eleTemplateDate();
         for (int i = 0, len = stepBeanList.size(); i < len; i++) {
-            StepBean item = (StepBean) objects[i];
+            final StepBean item = (StepBean) objects[i];
             Place from = item.from;
             Place to = item.to;
             // 备份

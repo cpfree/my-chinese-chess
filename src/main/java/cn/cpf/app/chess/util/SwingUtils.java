@@ -36,17 +36,20 @@ public class SwingUtils {
         Point fromPoint = component.getLocation();
         int xSub = toPoint.x - fromPoint.x;
         int ySub = toPoint.y - fromPoint.y;
-        // 基本倍率
+        // 移动时间倍率
         final double sqrt = Math.sqrt((Math.sqrt(Math.pow(xSub, 2) + Math.pow(ySub, 2)) / PX_ONE_TIME * INTERVAL) / BASE_TIME);
         // 移动次数
         int times = (int) (BASE_TIME * sqrt / INTERVAL);
-        for (int i = 0; i < times; i++) {
-            double p = (double) i / times;
-            component.setLocation((int) (fromPoint.x + xSub * p), (int) (fromPoint.y + ySub * p));
+        for (int i = 1; i < times; i++) {
+            double p = ((double) i) / times;
             Thread.sleep(INTERVAL);
+            component.setLocation((int) (fromPoint.x + xSub * p), (int) (fromPoint.y + ySub * p));
         }
-        component.setLocation(toPoint.x, toPoint.y);
+        // 上面的计算 sqrt 可能会有误差, 如果有误差, 重新设置下扶正
+        if (!toPoint.equals(component.getLocation())) {
+            Thread.sleep(INTERVAL);
+            component.setLocation(toPoint);
+        }
     }
-
 
 }

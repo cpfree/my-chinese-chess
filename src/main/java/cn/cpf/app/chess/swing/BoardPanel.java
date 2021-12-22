@@ -1,5 +1,7 @@
 package cn.cpf.app.chess.swing;
 
+import cn.cpf.app.chess.algorithm.Role;
+import cn.cpf.app.chess.conf.ChessAudio;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.conf.ChessImage;
 import cn.cpf.app.chess.ctrl.Application;
@@ -7,6 +9,7 @@ import cn.cpf.app.chess.ctrl.Situation;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.modal.Part;
+import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.PlayerType;
 import cn.cpf.app.chess.util.ListPool;
@@ -93,6 +96,9 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
     public void mouseReleased(MouseEvent e) {
         // 位置
         Place pointerPlace = ChessDefined.convertLocationToPlace(e.getPoint());
+        if (pointerPlace == null) {
+            return;
+        }
         // 当前走棋方
         @NonNull Part pointerPart = situation.getNextPart();
         // 当前焦点棋子
@@ -109,6 +115,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
                 // 获取toList
                 MyList<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
                 traceMarker.showMarkPlace(list);
+                ChessAudio.CLICK_FROM.play();
                 log.info("true -> 当前焦点位置有棋子且是本方棋子");
                 final ListPool listPool = ListPool.localPool();
                 listPool.addListToPool(list);
@@ -129,6 +136,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             traceMarker.setMarkFromPlace(pointerPlace);
             MyList<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
             traceMarker.showMarkPlace(list);
+            ChessAudio.CLICK_FROM.play();
             log.info("true -> 更新 curFromPiece");
             ListPool.localPool().addListToPool(list);
             return;
@@ -142,9 +150,21 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
         // 落子
         new Thread(() -> {
-            Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
-            if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
-                Application.context().aiRunOneTime();
+            final Piece eatenPiece = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
+            if (eatenPiece == null) {
+                ChessAudio.CLICK_TO_SUCCESS.play();
+                if (PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
+                    Application.context().aiRunOneTime();
+                }
+            } else if (eatenPiece.role == Role.BOSS){
+                final Part part = Part.getOpposite(eatenPiece.part);
+                JOptionPane.showMessageDialog(this, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
+                log.info("游戏结束 ==> {} 胜利", part.name());
+            } else {
+                ChessAudio.MAN_EAT_COM.play();
+                if (PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
+                    Application.context().aiRunOneTime();
+                }
             }
         }).start();
     }

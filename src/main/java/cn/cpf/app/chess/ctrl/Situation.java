@@ -161,7 +161,7 @@ public class Situation implements Serializable {
      * @param to   目标位置
      * @return 如果目标位置是 Boss 角色, 则返回 被吃 boss 角色的势力
      */
-    Part movePiece(Place from, Place to) {
+    Piece movePiece(Place from, Place to) {
         final ChessPiece fromPiece = getChessPiece(from);
         final ChessPiece eatenPiece = getChessPiece(to);
         Objects.requireNonNull(fromPiece, "找不到移动的棋子");
@@ -184,7 +184,7 @@ public class Situation implements Serializable {
         // 变更势力
         nextPart = Part.getOpposite(nextPart);
         // 开额外线程判断是否胜利, 或连将
-        return eatenPiece != null && eatenPiece.piece.role == Role.BOSS ? Part.getOpposite(nextPart) : null;
+        return eatenPiece == null ? null : eatenPiece.piece;
     }
 
     /**

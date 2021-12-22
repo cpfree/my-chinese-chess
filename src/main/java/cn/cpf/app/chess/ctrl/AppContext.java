@@ -2,6 +2,8 @@ package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.algorithm.AlphaBeta;
 import cn.cpf.app.chess.algorithm.DebugInfo;
+import cn.cpf.app.chess.algorithm.Role;
+import cn.cpf.app.chess.conf.ChessAudio;
 import cn.cpf.app.chess.modal.*;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.util.ArrayUtils;
@@ -44,6 +46,7 @@ public class AppContext {
      * @param situation 棋局形势
      */
     public void init(Situation situation) {
+        ChessAudio.OPEN_BOARD.play();
         this.situation = situation;
         boardPanel.init(situation);
     }
@@ -83,15 +86,10 @@ public class AppContext {
      * 落子函数, 并附带落子后的胜负检查等操作逻辑.
      * @return 获胜方, 如果有值表示获胜方已经产生, 无法继续执行, 如果为null 表示游戏可以继续.
      */
-    public Part locatePiece(Place from, Place to) {
-        Part part = situation.movePiece(from, to);
+    public Piece locatePiece(Place from, Place to) {
+        Piece eatenPiece = situation.movePiece(from, to);
         boardPanel.updateMark(from, to);
-        // 判断是否结束
-        if (part != null) {
-            JOptionPane.showMessageDialog(boardPanel, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
-            log.info("游戏结束 ==> {} 胜利", part.name());
-        }
-        return part;
+        return eatenPiece;
     }
 
     /**
@@ -120,7 +118,18 @@ public class AppContext {
         }
         // 计算出下一步棋
         StepBean evaluatedStepBean = this.computeStepBean();
-        return locatePiece(evaluatedStepBean.from, evaluatedStepBean.to);
+        final Piece eatenPiece = locatePiece(evaluatedStepBean.from, evaluatedStepBean.to);
+        // 判断是否结束
+        if (eatenPiece == null) {
+            ChessAudio.COM_MOVE.play();
+        } else if (eatenPiece.role == Role.BOSS){
+            final Part part = Part.getOpposite(eatenPiece.part);
+            JOptionPane.showMessageDialog(boardPanel, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
+            log.info("游戏结束 ==> {} 胜利", part.name());
+        } else {
+            ChessAudio.COM_EAT_MAN.play();
+        }
+        return eatenPiece == null ? null : Part.getOpposite(eatenPiece.part);
     }
 
 }

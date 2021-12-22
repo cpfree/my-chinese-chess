@@ -60,7 +60,12 @@ public interface ChessDefined {
      * 根据指定位置的点找到所属Place位置
      */
     static Place convertLocationToPlace(Point point) {
-        return Place.of((point.x - X_INIT) / GRID_INTERVAL, (point.y - Y_INIT) / GRID_INTERVAL);
+        final int x = (point.x - X_INIT) / GRID_INTERVAL;
+        final int y = (point.y - Y_INIT) / GRID_INTERVAL;
+        if (x >= ChessDefined.RANGE_X || y >= ChessDefined.RANGE_Y) {
+            return null;
+        }
+        return Place.of(x, y);
     }
 
     /**
