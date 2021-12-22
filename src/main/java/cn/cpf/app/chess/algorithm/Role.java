@@ -491,35 +491,11 @@ public enum Role {
         }
     });
 
-    private final Rule rule;
+    public final Rule rule;
 
     Role(Rule rule) {
         this.rule = rule;
     }
-
-    /**
-     * 检查棋子是否符合规则(当前 part 方, 从 from 走到 to)
-     *
-     * @param piece 棋盘棋子
-     * @param part 当前走棋方
-     * @param from from
-     * @param to to
-     * @return true: 符合规则, false: 不符合规则
-     */
-    public boolean check(Piece[][] piece, Part part, Place from, Place to) {
-        final AnalysisBean analysisBean = new AnalysisBean(piece);
-        if (this == Role.BOSS) {
-            if (analysisBean.bossF2fAfterBossMove(part, to)) {
-                return false;
-            }
-        } else {
-            if (analysisBean.isBossF2FAndWithOnlyThePlaceInMiddle(from) && !analysisBean.isBossF2FAndWithThePlaceInMiddle(to)) {
-                return false;
-            }
-        }
-        return rule.check(analysisBean.pieces, part, from, to);
-    }
-
 
     public MyList<Place> find(AnalysisBean analysisBean, Part curPart, Place from) {
         if (this == Role.BOSS) {

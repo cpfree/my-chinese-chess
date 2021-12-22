@@ -1,6 +1,6 @@
 package cn.cpf.app.chess.swing;
 
-import cn.cpf.app.chess.algorithm.Role;
+import cn.cpf.app.chess.algorithm.AnalysisBean;
 import cn.cpf.app.chess.conf.ChessAudio;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.conf.ChessImage;
@@ -53,6 +53,8 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         setLayout(null);
         // 初始化标记符
         traceMarker = new TraceMarker(BoardPanel.this);
+        // 添加鼠标事件
+        addMouseListener(this);
     }
 
     /**
@@ -84,8 +86,6 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         situation.getSituationRecord().getEatenPieceList().forEach(it -> add(it.getComp()));
         // 初始化标记符
         traceMarker.initMarker();
-        // 添加鼠标事件
-        addMouseListener(this);
         repaint();
     }
 
@@ -110,10 +110,10 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             // 当前焦点位置有棋子且是本方棋子
             if (pointerPiece != null && pointerPiece.piece.part == pointerPart) {
                 // 本方棋子, 同时是from指向
-                curFromPiece = situation.getChessPiece(pointerPlace);
+                curFromPiece = pointerPiece;
                 traceMarker.setMarkFromPlace(pointerPlace);
                 // 获取toList
-                MyList<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
+                MyList<Place> list = curFromPiece.piece.role.find(situation.generatePieces(), pointerPart, pointerPlace);
                 traceMarker.showMarkPlace(list);
                 ChessAudio.CLICK_FROM.play();
                 log.info("true -> 当前焦点位置有棋子且是本方棋子");
@@ -134,7 +134,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             // 更新 curFromPiece
             curFromPiece = pointerPiece;
             traceMarker.setMarkFromPlace(pointerPlace);
-            MyList<Place> list = curFromPiece.piece.role.find(situation.genePiece(), pointerPart, pointerPlace);
+            MyList<Place> list = curFromPiece.piece.role.find(situation.generatePieces(), pointerPart, pointerPlace);
             traceMarker.showMarkPlace(list);
             ChessAudio.CLICK_FROM.play();
             log.info("true -> 更新 curFromPiece");
@@ -142,29 +142,25 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             return;
         }
         // 如果不符合规则则直接返回
-        if (!curFromPiece.piece.role.check(situation.genePiece(), pointerPart, curFromPiece.getPlace(), pointerPlace)) {
+        final Piece[][] pieces = situation.generatePieces();
+        if (!curFromPiece.piece.role.rule.check(pieces, pointerPart, curFromPiece.getPlace(), pointerPlace)) {
             // 如果当前指向棋子是本方棋子
             log.warn("不符合走棋规则");
+            return;
+        }
+        AnalysisBean bean = new AnalysisBean(pieces);
+        // 如果不符合规则则直接返回
+        if (!bean.isBossF2FAfterStep(curFromPiece.piece, curFromPiece.getPlace(), pointerPlace)) {
+            ChessAudio.CLICK_TO_ERROR.play();
             return;
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
         // 落子
         new Thread(() -> {
-            final Piece eatenPiece = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace);
-            if (eatenPiece == null) {
-                ChessAudio.CLICK_TO_SUCCESS.play();
-                if (PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
-                    Application.context().aiRunOneTime();
-                }
-            } else if (eatenPiece.role == Role.BOSS){
-                final Part part = Part.getOpposite(eatenPiece.part);
-                JOptionPane.showMessageDialog(this, part.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
-                log.info("游戏结束 ==> {} 胜利", part.name());
-            } else {
-                ChessAudio.MAN_EAT_COM.play();
-                if (PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
-                    Application.context().aiRunOneTime();
-                }
+            final Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace, PlayerType.PEOPLE);
+            // 如果没有获胜方, 并且下一步是 COM 角色运行, 则调用 COM 运行一次
+            if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
+                Application.context().aiRunOneTime();
             }
         }).start();
     }

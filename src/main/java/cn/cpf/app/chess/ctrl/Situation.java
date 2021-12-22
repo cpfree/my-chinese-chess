@@ -112,7 +112,7 @@ public class Situation implements Serializable {
     /**
      * 根据 ChessPiece[][] 数组新建立一个 Piece[][] 数组
      */
-    public Piece[][] genePiece() {
+    public Piece[][] generatePieces() {
         final Piece[][] pieces = new Piece[ChessDefined.RANGE_X][ChessDefined.RANGE_Y];
         for (int x = 0; x < ChessDefined.RANGE_X; x++) {
             for (int y = 0; y < ChessDefined.RANGE_Y; y++) {
@@ -180,7 +180,7 @@ public class Situation implements Serializable {
             eatenPiece.hide();
         }
         // 添加记录
-        situationRecord.addRecord(new StepRecord(nextPart, fromPiece.piece, from, to, eatenPiece));
+        situationRecord.addRecord(new StepRecord(fromPiece.piece, from, to, eatenPiece));
         // 变更势力
         nextPart = Part.getOpposite(nextPart);
         // 开额外线程判断是否胜利, 或连将

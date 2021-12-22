@@ -18,20 +18,15 @@ import java.util.Date;
 public class StepRecord {
 
     /**
-     * 走棋方
-     */
-    private final Part part;
-    /**
      * 移动棋子
      */
     private final Piece piece;
     private final Place from;
     private final Place to;
-    private final Date date;
     private final ChessPiece eatenPiece;
+    private final Date date;
 
-    public StepRecord(@NonNull Part part, @NonNull Piece piece, @NonNull Place from, @NonNull Place to, ChessPiece eatenPiece) {
-        this.part = part;
+    public StepRecord(@NonNull Piece piece, @NonNull Place from, @NonNull Place to, ChessPiece eatenPiece) {
         this.piece = piece;
         this.from = from;
         this.to = to;

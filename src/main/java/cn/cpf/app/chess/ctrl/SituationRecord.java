@@ -50,7 +50,7 @@ public class SituationRecord implements Serializable {
     }
 
     public void addRecord(@NonNull StepRecord stepRecord) {
-        if (Part.RED == stepRecord.getPart()) {
+        if (Part.RED == stepRecord.getPiece().part) {
             redStep++;
         } else {
             blackStep++;

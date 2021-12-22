@@ -51,7 +51,7 @@ public class AlphaBeta {
      * @param pieceNum 棋子数量
      * @return 调整搜索深度差值
      */
-    private static int searchDeepSuit(final int pieceNum) {
+    public static int searchDeepSuit(final int pieceNum) {
         // 根据棋子数量, 动态调整搜索深度
         if (pieceNum > 20) {
             return -2;
@@ -207,11 +207,9 @@ public class AlphaBeta {
      * @param deep      搜索深度
      * @return 下一步的位置
      */
-    public static Set<StepBean> getEvaluatedPlace(final Piece[][] srcPieces, final Part curPart, int deep) {
+    public static Set<StepBean> getEvaluatedPlace(final Piece[][] srcPieces, final Part curPart, final int deep) {
         // 1. 初始化各个变量
         final AnalysisBean analysisBean = new AnalysisBean(srcPieces);
-        // 根据棋子数量, 动态调整搜索深度
-        deep += searchDeepSuit(analysisBean.getPieceNum());
         // 2. 获取可以下子的空位列表
         MyList<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
         // 进入循环之前计算好循环内使用常量
@@ -231,12 +229,17 @@ public class AlphaBeta {
             int score;
             // 判断是否胜利
             if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
-                score = MAX;
+                // 步数越少, 分值越大
+                score = MAX + deep;
             } else {
                 // 走棋
                 final int invScr = analysisBean.goForward(item.from, to, eatenPiece);
                 // 评分
-                score = negativeMaximum(analysisBean, oppositeCurPart, nextDeep, -best);
+                if (deep <= 1) {
+                    score = analysisBean.getCurPartEvaluateScore(curPart);
+                } else {
+                    score = negativeMaximum(analysisBean, oppositeCurPart, nextDeep, -best);
+                }
                 // 退回上一步
                 analysisBean.backStep(item.from, to, eatenPiece, invScr);
             }
@@ -262,11 +265,9 @@ public class AlphaBeta {
      * @param deep      搜索深度
      * @return 下一步的位置
      */
-    public static Set<StepBean> getEvaluatedPlaceWithParallel(final Piece[][] srcPieces, final Part curPart, int deep) {
+    public static Set<StepBean> getEvaluatedPlaceWithParallel(final Piece[][] srcPieces, final Part curPart, final int deep) {
         // 1. 初始化各个变量
         final AnalysisBean srcAnalysisBean = new AnalysisBean(srcPieces);
-        // 根据棋子数量, 动态调整搜索深度
-        deep += searchDeepSuit(srcAnalysisBean.getPieceNum());
         // 2. 获取可以下子的空位列表
         MyList<StepBean> stepBeanList = geneNestStepPlaces(srcAnalysisBean, curPart, deep);
         // 进入循环之前计算好循环内使用常量
@@ -289,12 +290,17 @@ public class AlphaBeta {
             int score;
             // 判断是否胜利
             if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
-                score = MAX;
+                // 步数越少, 分值越大
+                score = MAX + deep;
             } else {
                 // 走棋
                 final int invScr = analysisBean.goForward(item.from, to, eatenPiece);
                 // 评分
-                score = negativeMaximum(analysisBean, oppositeCurPart, nextDeep, -best.get());
+                if (deep <= 1) {
+                    score = analysisBean.getCurPartEvaluateScore(curPart);
+                } else {
+                    score = negativeMaximum(analysisBean, oppositeCurPart, nextDeep, -best.get());
+                }
                 // 退回上一步
                 analysisBean.backStep(item.from, to, eatenPiece, invScr);
             }
@@ -348,7 +354,8 @@ public class AlphaBeta {
             int score;
             // 判断是否胜利
             if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
-                score = MAX;
+                // 步数越少, 分值越大
+                score = MAX + deep;
             } else {
                 // 走棋
                 final int invScr = analysisBean.goForward(from, to, eatenPiece);
