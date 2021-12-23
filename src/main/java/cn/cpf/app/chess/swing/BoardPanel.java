@@ -18,6 +18,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 
 /**
  * <b>Description : </b> 棋盘面板
@@ -168,11 +169,11 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             return;
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
-        new Thread(() -> {
-            // 落子
-            Application.context().locatePiece(stepBean.from, stepBean.to, PlayerType.PEOPLE);
-            Application.context().getCommandExecutor().sendCommand(CommandExecutor.CommandType.SustainAiRunIfNextIsAi);
-        }).start();
+        Object[] objects = new Object[]{stepBean.from, stepBean.to, PlayerType.PEOPLE};
+        final boolean sendSuccess = Application.context().getCommandExecutor().sendCommandWhenNotRun(CommandExecutor.CommandType.LocationPiece, objects);
+        if (!sendSuccess) {
+            log.warn("命令未发送成功: {} ==> {}", CommandExecutor.CommandType.LocationPiece, Arrays.toString(objects));
+        }
     }
 
     @Override

@@ -52,6 +52,7 @@ public class AppContext {
         ChessAudio.OPEN_BOARD.play();
         this.situation = situation;
         boardPanel.init(situation);
+        getCommandExecutor().sendCommand(CommandExecutor.CommandType.SustainAiRunIfNextIsAi);
     }
 
     /**

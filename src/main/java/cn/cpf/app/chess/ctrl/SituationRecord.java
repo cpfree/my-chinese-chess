@@ -1,15 +1,16 @@
 package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.modal.Part;
-import cn.cpf.app.chess.modal.Piece;
-import cn.cpf.app.chess.modal.Place;
 import cn.cpf.app.chess.modal.StepRecord;
 import cn.cpf.app.chess.swing.ChessPiece;
 import lombok.Getter;
 import lombok.NonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EmptyStackException;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * <b>Description : </b> 步骤记录器
