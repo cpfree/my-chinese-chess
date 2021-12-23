@@ -27,24 +27,39 @@ public enum ChessAudio {
      */
     CLICK_FROM("300"),
     /**
-     * 被将军时, 走错棋
+     * 长拦, 或者导致 BOSS面对面, 或者被将军时, 走错棋
      */
-    CLICK_TO_ERROR("301"),
+    MAN_MOV_ERROR("301"),
     /**
-     * to 点击, 触发正常走棋
+     * MAN 角色触发正常走棋
      */
-    CLICK_TO_SUCCESS("302"),
+    MAN_MOVE("302"),
     /**
      * COM 走棋
      */
     COM_MOVE("303"),
-    MAN_EAT_COM("304"),
-    COM_EAT_MAN("305"),
-    MAN_JIANG_COM("306"),
-    COM_JIANG_MAN("307"),
+    /**
+     * MAN 方吃掉 对方
+     */
+    MAN_EAT("304"),
+    /**
+     * COM 方吃掉 对方
+     */
+    COM_EAT("305"),
+    /**
+     * MAN 方 抑制/将军 对方
+     */
+    MAN_CHECK("306"),
+    /**
+     * COM 方 抑制/将军 对方
+     */
+    COM_CHECK("307"),
     WIN_BGM("308"),
     LOSE_BGM("309"),
-    BE_LOSE_JIANG_JUN("310"),
+    /**
+     * 被 COM 角色将死
+     */
+    BE_CHECKMATED_BY_COM("310"),
     OPEN_BOARD("311")
     ;
 

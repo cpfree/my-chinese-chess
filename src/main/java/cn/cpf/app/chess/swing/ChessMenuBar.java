@@ -106,6 +106,15 @@ public class ChessMenuBar extends JMenuBar {
         muSetting.add(new JSeparator());
 
         /* 添加 AI 计算模式选择框 */
+        JCheckBoxMenuItem checkMod = new JCheckBoxMenuItem("被将军时也可以乱动");
+        addLambdaMouseListener(checkMod, e -> Application.config().setActiveWhenBeCheck(checkMod.getState()));
+        muSetting.add(checkMod);
+        // 初始化值
+        checkMod.setState(Application.config().isActiveWhenBeCheck());
+
+        muSetting.add(new JSeparator());
+
+        /* 添加 AI 计算模式选择框 */
         JCheckBoxMenuItem aiCalcMod = new JCheckBoxMenuItem("多核并行计算");
         addLambdaMouseListener(aiCalcMod, e -> Application.config().setParallel(aiCalcMod.getState()));
         muSetting.add(aiCalcMod);

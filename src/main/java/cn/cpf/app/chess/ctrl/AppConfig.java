@@ -32,6 +32,10 @@ public class AppConfig {
      */
     private int searchDeepLevel;
     /**
+     * 即便被将军时也可以乱动
+     */
+    private boolean activeWhenBeCheck;
+    /**
      * 是否使用并行流
      */
     private boolean parallel;

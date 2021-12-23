@@ -98,11 +98,14 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         if (pointerPlace == null) {
             return;
         }
+        if (situation.winner() != null) {
+            log.warn("已经存在胜利者: {}, 无法走棋", situation.winner());
+            return;
+        }
         // 当前走棋方
         @NonNull Part pointerPart = situation.getNextPart();
         // 当前焦点棋子
         ChessPiece pointerPiece = situation.getChessPiece(pointerPlace);
-
         // 通过当前方和当前位置判断是否可以走棋
         // step: form
         if (curFromPiece == null) {
@@ -151,22 +154,24 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         // 如果达成长拦或者长捉, 则返回
         final StepBean forbidStepBean = situation.getForbidStepBean();
         if (forbidStepBean != null && forbidStepBean.from == stepBean.from && forbidStepBean.to == stepBean.to) {
-            ChessAudio.CLICK_TO_ERROR.play();
+            ChessAudio.MAN_MOV_ERROR.play();
             log.warn("长拦或长捉");
             return;
         }
         AnalysisBean analysisBean = new AnalysisBean(pieces);
         // 如果走棋后, 导致两个 BOSS 对面, 则返回
         if (!analysisBean.isBossF2FAfterStep(curFromPiece.piece, stepBean.from, stepBean.to)) {
-            ChessAudio.CLICK_TO_ERROR.play();
+            ChessAudio.MAN_MOV_ERROR.play();
             log.warn("BOSS面对面");
             return;
         }
         /* 模拟走一步棋, 之后再计算对方再走一步是否能够吃掉本方的 boss */
         if (analysisBean.simulateOneStep(stepBean, bean -> bean.canEatBossAfterOneAiStep(Part.getOpposite(pointerPart)))) {
-            ChessAudio.CLICK_TO_ERROR.play();
+            ChessAudio.MAN_MOV_ERROR.play();
             log.warn("BOSS 危险");
-            return;
+            if (!Application.config().isActiveWhenBeCheck()) {
+                return;
+            }
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
         Object[] objects = new Object[]{stepBean.from, stepBean.to, PlayerType.PEOPLE};

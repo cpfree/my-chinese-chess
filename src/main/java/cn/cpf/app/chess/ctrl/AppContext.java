@@ -122,7 +122,7 @@ public class AppContext {
             if (PlayerType.PEOPLE == playerType) {
                 ChessAudio.WIN_BGM.play();
             } else {
-                ChessAudio.LOSE_BGM.play();
+                ChessAudio.BE_CHECKMATED_BY_COM.play();
             }
             JOptionPane.showMessageDialog(boardPanel, curPart.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
             log.info("游戏结束 ==> {} 胜利", curPart.name());
@@ -133,19 +133,19 @@ public class AppContext {
         // 根据不同情况发出声音
         if (PlayerType.PEOPLE == playerType) {
             if (canEatBossNextStep) {
-                ChessAudio.MAN_JIANG_COM.play();
+                ChessAudio.MAN_CHECK.play();
             } else if (eatenPiece == null){
-                ChessAudio.CLICK_TO_SUCCESS.play();
+                ChessAudio.MAN_MOVE.play();
             } else {
-                ChessAudio.MAN_EAT_COM.play();
+                ChessAudio.MAN_EAT.play();
             }
         } else {
             if (canEatBossNextStep) {
-                ChessAudio.COM_JIANG_MAN.play();
+                ChessAudio.COM_CHECK.play();
             } else if (eatenPiece == null){
                 ChessAudio.COM_MOVE.play();
             } else {
-                ChessAudio.COM_EAT_MAN.play();
+                ChessAudio.COM_EAT.play();
             }
         }
         return null;
