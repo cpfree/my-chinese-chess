@@ -5,8 +5,12 @@ import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.Piece;
 import cn.cpf.app.chess.modal.Place;
+import cn.cpf.app.chess.modal.StepBean;
 import cn.cpf.app.chess.util.ArrayUtils;
 import lombok.NonNull;
+
+import java.util.Set;
+import java.util.function.Predicate;
 
 
 /**
@@ -206,6 +210,14 @@ public class AnalysisBean {
     }
 
     /**
+     * @param place 棋盘位置
+     * @return 对应棋盘位置的棋子对象
+     */
+    public Piece getPiece(@NonNull Place place) {
+        return pieces[place.x][place.y];
+    }
+
+    /**
      * 获取对方Boss的位置
      */
     public Place getOppoBossPlace(Part curPart) {
@@ -246,11 +258,71 @@ public class AnalysisBean {
         }
         return ArrayUtils.oneInMiddle(pieces[redBoss.x], redBoss.y, blackBoss.y);
     }
+
     /**
      * @return true : 当前位置在 两个boss 中间(包含boss的位置)
      */
     public boolean isBossF2FAndWithThePlaceInMiddle(Place place) {
         return redBoss.x == blackBoss.x && place.x == redBoss.x && place.y <= redBoss.y && place.y >= blackBoss.y;
+    }
+
+    /**
+     * 检查一步走棋后会不会造成 Boss 面对面 (当前 part 方, 从 from 走到 to)
+     *
+     * @param piece 当前走棋棋子
+     * @param from from
+     * @param to to
+     * @return true: 符合规则, false: 不符合规则
+     */
+    public boolean isBossF2FAfterStep(Piece piece, Place from, Place to) {
+        if (Role.BOSS == piece.role) {
+            return !bossF2fAfterBossMove(piece.part, to);
+        } else {
+            return !isBossF2FAndWithOnlyThePlaceInMiddle(from) || isBossF2FAndWithThePlaceInMiddle(to);
+        }
+    }
+
+    /**
+     * AI 计算 curPart 方若是走一步棋是否能够吃掉对方的 BOSS
+     */
+    public boolean canEatBossAfterOneAiStep(Part part) {
+        final Set<StepBean> nextStepAgainEvalPlace = AlphaBeta.getEvaluatedPlace(pieces, part, 1, null);
+        // 计算后的步骤中, 是否存在能吃掉 BOSS 的一步
+        for (StepBean stepBean : nextStepAgainEvalPlace) {
+            final Piece piece = getPiece(stepBean.to);
+            if (piece != null && piece.role == Role.BOSS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean simulateOneStep(StepBean stepBean, Predicate<AnalysisBean> predicate) {
+        final Piece eatenPiece = getPiece(stepBean.to);
+        // 模拟走棋
+        final int invScr = goForward(stepBean.from, stepBean.to, eatenPiece);
+        // 评分
+        final boolean test = predicate.test(this);
+        // 退回上一步
+        backStep(stepBean.from, stepBean.to, eatenPiece, invScr);
+        return test;
+    }
+
+    /**
+     * AI计算后, part 走一步棋之后 是否能够避免对方下一步吃掉自己的 BOSS
+     *
+     * @param part 当前方
+     */
+    public boolean canAvoidBeEatBossAfterOneAIStep(Part part) {
+        final Set<StepBean> nextStepAgainEvalPlace = AlphaBeta.getEvaluatedPlace(pieces, part, 2, null);
+        // 计算后的步骤中, 是否存在能吃掉 BOSS 的一步
+        for (StepBean stepBean : nextStepAgainEvalPlace) {
+            // 如果 stepBean 走完之后, 对方无法吃掉自己的 BOSS, 则返回true
+            if (!simulateOneStep(stepBean, bean -> bean.canEatBossAfterOneAiStep(Part.getOpposite(part)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

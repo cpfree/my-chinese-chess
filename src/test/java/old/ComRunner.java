@@ -1,5 +1,6 @@
-package cn.cpf.app.chess.ctrl;
+package old;
 
+import cn.cpf.app.chess.ctrl.Application;
 import cn.cpf.app.chess.modal.Part;
 import cn.cpf.app.chess.modal.PlayerType;
 import cn.cpf.app.chess.swing.BoardPanel;

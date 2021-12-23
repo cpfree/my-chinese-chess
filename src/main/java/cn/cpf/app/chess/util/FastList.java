@@ -85,6 +85,24 @@ public class FastList<E> implements MyList<E>, Collection<E> {
     }
 
     @Override
+    public boolean remove(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        final int idx = ArrUtils.indexOf(elementData, obj);
+        if (idx == -1) {
+            return false;
+        }
+        final int end = this.size();
+        for (int j = idx; j < end - 1; j++) {
+            elementData[j] = elementData[j + 1];
+        }
+        elementData[end - 1] = null;
+        size--;
+        return true;
+    }
+
+    @Override
     public void close() {
         ListPool.localPool().clearAndPushToPool(this);
     }
@@ -132,11 +150,6 @@ public class FastList<E> implements MyList<E>, Collection<E> {
 
     @Override
     public <T> T[] toArray(T[] a) {
-        throw new ShouldNotHappenException();
-    }
-
-    @Override
-    public boolean remove(Object o) {
         throw new ShouldNotHappenException();
     }
 

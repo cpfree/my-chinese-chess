@@ -56,8 +56,12 @@ public class AppContext {
 
     /**
      * @return AI 计算下一步落子位置
+     *
+     * @param pieces     棋局棋子
+     * @param part       当前走棋方
+     * @param forbidStep 禁止的步骤(长捉或长拦)
      */
-    public static StepBean computeStepBean(@NonNull final Piece[][] pieces, @NonNull final Part part) {
+    public static StepBean computeStepBean(@NonNull final Piece[][] pieces, @NonNull final Part part, final StepBean forbidStep) {
         log.info("com run start");
         DebugInfo.initAlphaBetaTime();
         long t = System.currentTimeMillis();
@@ -67,13 +71,16 @@ public class AppContext {
         // 计算
         final Set<StepBean> evaluatedPlaceSet;
         if (Application.config().isParallel()) {
-            evaluatedPlaceSet = AlphaBeta.getEvaluatedPlaceWithParallel(pieces, part, deep);
+            evaluatedPlaceSet = AlphaBeta.getEvaluatedPlaceWithParallel(pieces, part, deep, forbidStep);
         } else {
-            evaluatedPlaceSet = AlphaBeta.getEvaluatedPlace(pieces, part, deep);
+            evaluatedPlaceSet = AlphaBeta.getEvaluatedPlace(pieces, part, deep, forbidStep);
         }
         // 随机选择一个最好的一步
         final StepBean stepBean;
-        if (evaluatedPlaceSet.size() > 1) {
+        if (evaluatedPlaceSet.isEmpty()) {
+            stepBean = null;
+            log.info("evaluated 没棋走了， Set == > {}", evaluatedPlaceSet);
+        } else if (evaluatedPlaceSet.size() > 1) {
             int ran = random.nextInt(evaluatedPlaceSet.size());
             stepBean = (StepBean) evaluatedPlaceSet.toArray()[ran];
             log.info("evaluated Set == > {}", evaluatedPlaceSet);
@@ -108,13 +115,21 @@ public class AppContext {
             log.info("游戏结束 ==> {} 胜利", curPart.name());
             return curPart;
         }
-        /* 计算若是再走一步是否能够吃掉对方的 boss */
-        final Set<StepBean> nextStepAgainEvalPlace = AlphaBeta.getEvaluatedPlace(situation.generatePieces(), curPart, 1);
-        // 计算后的步骤中, 是否存在能吃掉 BOSS 的一步
-        final boolean canEatBossNextStep = nextStepAgainEvalPlace.stream().anyMatch(it -> {
-            final ChessPiece chessPiece = situation.getChessPiece(it.to);
-            return chessPiece != null && chessPiece.piece.role == Role.BOSS;
-        });
+        AnalysisBean bean = new AnalysisBean(situation.generatePieces());
+        /* 判断对方是否死棋: AI 计算无论对方怎么走, 都无法避免被吃掉 BOSS, 则代表对方已经死棋 */
+        if (!bean.canAvoidBeEatBossAfterOneAIStep(Part.getOpposite(curPart))) {
+            if (PlayerType.PEOPLE == playerType) {
+                ChessAudio.WIN_BGM.play();
+            } else {
+                ChessAudio.LOSE_BGM.play();
+            }
+            JOptionPane.showMessageDialog(boardPanel, curPart.name() + "胜利", "游戏结束", JOptionPane.INFORMATION_MESSAGE);
+            log.info("游戏结束 ==> {} 胜利", curPart.name());
+            return curPart;
+        }
+        // 是否将军: AI 计算 curPart 方 再走一步是否能够吃掉对方的 BOSS
+        final boolean canEatBossNextStep = bean.canEatBossAfterOneAiStep(curPart);
+        // 根据不同情况发出声音
         if (PlayerType.PEOPLE == playerType) {
             if (canEatBossNextStep) {
                 ChessAudio.MAN_JIANG_COM.play();
@@ -160,8 +175,14 @@ public class AppContext {
             return winner;
         }
         final Part nextPart = situation.getNextPart();
+        // 判断是否存在需要禁止走的棋路(长捉, 或长拦)
+        final StepBean forbidStepBean = situation.getForbidStepBean();
         // 计算出下一步棋
-        StepBean evaluatedStepBean = computeStepBean(situation.generatePieces(), nextPart);
+        StepBean evaluatedStepBean = computeStepBean(situation.generatePieces(), nextPart, forbidStepBean);
+        if (evaluatedStepBean == null) {
+            log.warn("[{}]没有棋走了, 无法再次 AI 计算", nextPart);
+            return Part.getOpposite(nextPart);
+        }
         return locatePiece(evaluatedStepBean.from, evaluatedStepBean.to, PlayerType.COM);
     }
 

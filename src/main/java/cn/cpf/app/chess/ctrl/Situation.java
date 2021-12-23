@@ -2,10 +2,7 @@ package cn.cpf.app.chess.ctrl;
 
 import cn.cpf.app.chess.algorithm.Role;
 import cn.cpf.app.chess.conf.ChessDefined;
-import cn.cpf.app.chess.modal.Part;
-import cn.cpf.app.chess.modal.Piece;
-import cn.cpf.app.chess.modal.Place;
-import cn.cpf.app.chess.modal.StepRecord;
+import cn.cpf.app.chess.modal.*;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessPiece;
 import cn.cpf.app.chess.util.JsonUtils;
@@ -123,6 +120,21 @@ public class Situation implements Serializable {
             }
         }
         return pieces;
+    }
+
+    /**
+     * @return 获取需要禁止的走棋步骤(长捉 & 长拦)
+     */
+    public StepBean getForbidStepBean() {
+        // 判断是否存在需要禁止走的棋路(长捉, 或长拦)
+        final StepRecord forbidStepRecord = getSituationRecord().getForbidStepRecord();
+        if (forbidStepRecord != null) {
+            final ChessPiece chessPiece = getChessPiece(forbidStepRecord.getFrom());
+            if (chessPiece != null && chessPiece.piece == forbidStepRecord.getPiece()) {
+                return StepBean.of(forbidStepRecord.getFrom(), forbidStepRecord.getTo());
+            }
+        }
+        return null;
     }
 
     /**

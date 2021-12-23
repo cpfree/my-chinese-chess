@@ -13,10 +13,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -205,13 +202,16 @@ public class AlphaBeta {
      * @param srcPieces 棋盘
      * @param curPart   当前走棋方
      * @param deep      搜索深度
+     * @param forbidStep 禁止的步骤(长捉或长拦)
      * @return 下一步的位置
      */
-    public static Set<StepBean> getEvaluatedPlace(final Piece[][] srcPieces, final Part curPart, final int deep) {
+    public static Set<StepBean> getEvaluatedPlace(final Piece[][] srcPieces, final Part curPart, final int deep, final StepBean forbidStep) {
         // 1. 初始化各个变量
         final AnalysisBean analysisBean = new AnalysisBean(srcPieces);
         // 2. 获取可以下子的空位列表
         MyList<StepBean> stepBeanList = geneNestStepPlaces(analysisBean, curPart, deep);
+        // 3. 移除不该下的子
+        stepBeanList.remove(forbidStep);
         // 进入循环之前计算好循环内使用常量
         Set<StepBean> bestPlace = new HashSet<>();
         int best = MIN;
@@ -263,13 +263,16 @@ public class AlphaBeta {
      * @param srcPieces 棋盘
      * @param curPart   当前走棋方
      * @param deep      搜索深度
+     * @param forbidStep 禁止的步骤(长捉或长拦)
      * @return 下一步的位置
      */
-    public static Set<StepBean> getEvaluatedPlaceWithParallel(final Piece[][] srcPieces, final Part curPart, final int deep) {
+    public static Set<StepBean> getEvaluatedPlaceWithParallel(final Piece[][] srcPieces, final Part curPart, final int deep, final StepBean forbidStep) {
         // 1. 初始化各个变量
         final AnalysisBean srcAnalysisBean = new AnalysisBean(srcPieces);
         // 2. 获取可以下子的空位列表
         MyList<StepBean> stepBeanList = geneNestStepPlaces(srcAnalysisBean, curPart, deep);
+        // 3. 移除不该下的子
+        stepBeanList.remove(forbidStep);
         // 进入循环之前计算好循环内使用常量
         final Set<StepBean> bestPlace = new HashSet<>();
         final AtomicInteger best = new AtomicInteger(MIN);

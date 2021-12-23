@@ -5,13 +5,11 @@ import cn.cpf.app.chess.conf.ChessAudio;
 import cn.cpf.app.chess.conf.ChessDefined;
 import cn.cpf.app.chess.conf.ChessImage;
 import cn.cpf.app.chess.ctrl.Application;
+import cn.cpf.app.chess.ctrl.CommandExecutor;
 import cn.cpf.app.chess.ctrl.Situation;
 import cn.cpf.app.chess.inter.LambdaMouseListener;
 import cn.cpf.app.chess.inter.MyList;
-import cn.cpf.app.chess.modal.Part;
-import cn.cpf.app.chess.modal.Piece;
-import cn.cpf.app.chess.modal.Place;
-import cn.cpf.app.chess.modal.PlayerType;
+import cn.cpf.app.chess.modal.*;
 import cn.cpf.app.chess.util.ListPool;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -141,27 +139,39 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             ListPool.localPool().addListToPool(list);
             return;
         }
+        final StepBean stepBean = StepBean.of(curFromPiece.getPlace(), pointerPlace);
         // 如果不符合规则则直接返回
         final Piece[][] pieces = situation.generatePieces();
-        if (!curFromPiece.piece.role.rule.check(pieces, pointerPart, curFromPiece.getPlace(), pointerPlace)) {
+        if (!curFromPiece.piece.role.rule.check(pieces, pointerPart, stepBean.from, stepBean.to)) {
             // 如果当前指向棋子是本方棋子
             log.warn("不符合走棋规则");
             return;
         }
-        AnalysisBean bean = new AnalysisBean(pieces);
-        // 如果不符合规则则直接返回
-        if (!bean.isBossF2FAfterStep(curFromPiece.piece, curFromPiece.getPlace(), pointerPlace)) {
+        // 如果达成长拦或者长捉, 则返回
+        final StepBean forbidStepBean = situation.getForbidStepBean();
+        if (forbidStepBean != null && forbidStepBean.from == curFromPiece.getPlace() && forbidStepBean.to == stepBean.to) {
             ChessAudio.CLICK_TO_ERROR.play();
+            log.warn("长拦或长捉");
+            return;
+        }
+        AnalysisBean analysisBean = new AnalysisBean(pieces);
+        // 如果走棋后, 导致两个 BOSS 对面, 则返回
+        if (!analysisBean.isBossF2FAfterStep(curFromPiece.piece, stepBean.from, stepBean.to)) {
+            ChessAudio.CLICK_TO_ERROR.play();
+            log.warn("BOSS面对面");
+            return;
+        }
+        /* 模拟走一步棋, 之后再计算对方再走一步是否能够吃掉本方的 boss */
+        if (analysisBean.simulateOneStep(stepBean, bean -> bean.canEatBossAfterOneAiStep(Part.getOpposite(pointerPart)))) {
+            ChessAudio.CLICK_TO_ERROR.play();
+            log.warn("BOSS 危险");
             return;
         }
         // 当前棋子无棋子或者为对方棋子, 且符合规则, 可以走棋
-        // 落子
         new Thread(() -> {
-            final Part part = Application.context().locatePiece(curFromPiece.getPlace(), pointerPlace, PlayerType.PEOPLE);
-            // 如果没有获胜方, 并且下一步是 COM 角色运行, 则调用 COM 运行一次
-            if (part == null && PlayerType.COM.equals(Application.config().getPlayerType(Application.context().getSituation().getNextPart()))) {
-                Application.context().aiRunOneTime();
-            }
+            // 落子
+            Application.context().locatePiece(stepBean.from, stepBean.to, PlayerType.PEOPLE);
+            Application.context().getCommandExecutor().sendCommand(CommandExecutor.CommandType.SustainAiRunIfNextIsAi);
         }).start();
     }
 
