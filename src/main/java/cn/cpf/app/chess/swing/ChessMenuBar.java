@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * <b>Description : </b> 面板菜单
@@ -60,8 +59,8 @@ public class ChessMenuBar extends JMenuBar {
                 Situation situation = Application.context().getSituation();
                 final String str = JsonUtils.toJson(situation);
                 String fileName = String.format("situation-%s-%s.chess.bin", situation.getSituationStartTime().toEpochSecond(ZoneOffset.of("+8")), LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyMMdd-HHmmss")));
-                String filePath = Objects.requireNonNull(Application.class.getResource("/"), "获取资源路径失败").getPath();
-                final File saveDir = new File(filePath + File.separator + "save");
+                final String userDir = System.getProperty("user.dir");
+                final File saveDir = new File(userDir + File.separator + "save");
                 FileSystemUtils.insureFileDirExist(saveDir);
                 File file = new File(saveDir.getPath() + File.separator + fileName);
                 assert !file.exists() : "文件已存在";
@@ -75,8 +74,8 @@ public class ChessMenuBar extends JMenuBar {
         });
 
         addItemToMenu(muSetting, "加载棋局", e -> {
-            String filePath = Objects.requireNonNull(Application.class.getResource("/"), "获取资源路径失败").getPath();
-            File file = new File(filePath + "save/");
+            final String userDir = System.getProperty("user.dir");
+            File file = new File(userDir + File.separator + "save/");
             if (!file.exists() || !file.isDirectory()) {
                 file = file.getParentFile();
             }
