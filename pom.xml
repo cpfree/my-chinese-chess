@@ -6,7 +6,7 @@
 
     <groupId>cn.cpf.app</groupId>
     <artifactId>chess</artifactId>
-    <version>1.0</version>
+    <version>1.0-release</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
