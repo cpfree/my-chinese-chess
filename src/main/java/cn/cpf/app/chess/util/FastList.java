@@ -85,6 +85,11 @@ public class FastList<E> implements MyList<E>, Collection<E> {
     }
 
     @Override
+    public boolean contains(Object obj) {
+        return ArrUtils.indexOf(elementData, obj) >= 0;
+    }
+
+    @Override
     public boolean remove(Object obj) {
         if (obj == null) {
             return false;
@@ -136,11 +141,6 @@ public class FastList<E> implements MyList<E>, Collection<E> {
      */
     private String outOfBoundsMsg(int index) {
         return "Index: " + index + ", Size: " + size;
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        throw new ShouldNotHappenException();
     }
 
     @Override

@@ -509,9 +509,4 @@ public enum Role {
         }
     }
 
-    public MyList<Place> find(Piece[][] piece, Part curPart, Place from) {
-        final AnalysisBean analysisBean = new AnalysisBean(piece);
-        return find(analysisBean, curPart, from);
-    }
-
 }

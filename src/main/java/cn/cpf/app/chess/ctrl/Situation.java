@@ -1,7 +1,9 @@
 package cn.cpf.app.chess.ctrl;
 
+import cn.cpf.app.chess.algorithm.AnalysisBean;
 import cn.cpf.app.chess.algorithm.Role;
 import cn.cpf.app.chess.conf.ChessDefined;
+import cn.cpf.app.chess.inter.MyList;
 import cn.cpf.app.chess.modal.*;
 import cn.cpf.app.chess.swing.BoardPanel;
 import cn.cpf.app.chess.swing.ChessPiece;
@@ -127,13 +129,41 @@ public class Situation implements Serializable {
      */
     public StepBean getForbidStepBean() {
         // 判断是否存在需要禁止走的棋路(长捉, 或长拦)
-        final StepRecord forbidStepRecord = getSituationRecord().getForbidStepRecord();
-        if (forbidStepRecord != null) {
-            final ChessPiece chessPiece = getChessPiece(forbidStepRecord.getFrom());
-            if (chessPiece != null && chessPiece.piece == forbidStepRecord.getPiece()) {
-                return StepBean.of(forbidStepRecord.getFrom(), forbidStepRecord.getTo());
-            }
+        final StepRecord[] loopStepArr = getSituationRecord().getLoopStepRecord();
+        if (loopStepArr == null || loopStepArr.length == 0) {
+            return null;
         }
+        // 对方上一步, 本方这一步, 对方下一步
+        final StepRecord before = loopStepArr[0];
+        final StepRecord current = loopStepArr[1];
+        final StepRecord after = loopStepArr[2];
+        final ChessPiece chessPiece = getChessPiece(current.getFrom());
+        assert chessPiece != null && chessPiece.piece == current.getPiece() : "current: " + current;
+        AnalysisBean bean = new AnalysisBean(generatePieces());
+        final Piece currentPiece = current.getPiece();
+        final Part curPart = currentPiece.part;
+        assert curPart == getNextPart() : "curPart != getNextPart()";
+        // A, B 交互, 如果满足以下条件则构成长捉, 不允许长捉
+        // 1. 本方 to 位置, 能吃掉对方下一步的 from 位置
+        // 2. 本方 from 位置, 无法吃掉对方下一步的 from 位置
+        // 2. 本方 to 位置, 无法吃掉对方下一步的 to 位置
+        if (currentPiece.role.find(bean, curPart, current.getTo()).contains(after.getFrom())
+                && !currentPiece.role.find(bean, curPart, current.getFrom()).contains(after.getFrom())
+                && !currentPiece.role.find(bean, curPart, current.getTo()).contains(after.getTo())) {
+            return StepBean.of(current.getFrom(), current.getTo());
+        }
+        // A, B 交互, 如果满足以下条件则构成长逃, 允许长逃
+        // 1. 对方上一步的 to 位置, 能吃掉 本方的 from 位置
+        // 2. 对方上一步的 to 位置, 无法吃掉本方的 to 位置
+        final Part opposite = Part.getOpposite(curPart);
+        final MyList<Place> beforeRange = before.getPiece().role.find(bean, opposite, before.getTo());
+        if (beforeRange.contains(current.getFrom()) && !beforeRange.contains(current.getTo())) {
+            return null;
+        }
+        // 其余的是长拦, 或者是普通循环
+        // 长拦很难判断, 也许就是恶意阻截, 也或许是如果不阻拦的话, 会导致本方危机
+        // 而普通循环会导致一直不吃子, 若是一直不吃子的话, 则直接暂停 COM 运行.
+        log.warn("触发了普通循环或者是长拦");
         return null;
     }
 

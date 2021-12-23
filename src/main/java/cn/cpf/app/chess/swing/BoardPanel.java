@@ -112,7 +112,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
                 curFromPiece = pointerPiece;
                 traceMarker.setMarkFromPlace(pointerPlace);
                 // 获取toList
-                MyList<Place> list = curFromPiece.piece.role.find(situation.generatePieces(), pointerPart, pointerPlace);
+                MyList<Place> list = curFromPiece.piece.role.find(new AnalysisBean(situation.generatePieces()), pointerPart, pointerPlace);
                 traceMarker.showMarkPlace(list);
                 ChessAudio.CLICK_FROM.play();
                 log.info("true -> 当前焦点位置有棋子且是本方棋子");
@@ -133,7 +133,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
             // 更新 curFromPiece
             curFromPiece = pointerPiece;
             traceMarker.setMarkFromPlace(pointerPlace);
-            MyList<Place> list = curFromPiece.piece.role.find(situation.generatePieces(), pointerPart, pointerPlace);
+            MyList<Place> list = curFromPiece.piece.role.find(new AnalysisBean(situation.generatePieces()), pointerPart, pointerPlace);
             traceMarker.showMarkPlace(list);
             ChessAudio.CLICK_FROM.play();
             log.info("true -> 更新 curFromPiece");
@@ -150,7 +150,7 @@ public class BoardPanel extends JPanel implements LambdaMouseListener {
         }
         // 如果达成长拦或者长捉, 则返回
         final StepBean forbidStepBean = situation.getForbidStepBean();
-        if (forbidStepBean != null && forbidStepBean.from == curFromPiece.getPlace() && forbidStepBean.to == stepBean.to) {
+        if (forbidStepBean != null && forbidStepBean.from == stepBean.from && forbidStepBean.to == stepBean.to) {
             ChessAudio.CLICK_TO_ERROR.play();
             log.warn("长拦或长捉");
             return;

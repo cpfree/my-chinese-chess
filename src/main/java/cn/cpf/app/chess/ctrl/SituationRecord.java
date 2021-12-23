@@ -95,7 +95,7 @@ public class SituationRecord implements Serializable {
      *
      * @return 下一步禁止的步骤.
      */
-    public StepRecord getForbidStepRecord() {
+    public StepRecord[] getLoopStepRecord() {
         final int length = records.size();
         List<StepRecord> list = new ArrayList<>();
         for (int n = length - 1; n >= initStepNumber ; n--) {
@@ -116,14 +116,15 @@ public class SituationRecord implements Serializable {
                 // 因此只要比较 piece, to 相等即可
                 if (iItem.getPiece() == jItem.getPiece() && iItem.getTo() == jItem.getTo()) {
                     if (i == n - 1) {
-                        return iItem;
+                        // i + 1 是对方的上一步, i - 1 是对方的下一步
+                        return new StepRecord[]{list.get(i + 1), iItem, list.get(i - 1)};
                     }
                 } else {
                     break;
                 }
             }
         }
-        return null;
+        return new StepRecord[0];
     }
 
 }
