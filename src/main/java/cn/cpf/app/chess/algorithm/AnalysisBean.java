@@ -22,16 +22,39 @@ import java.util.function.Predicate;
 public class AnalysisBean {
 
     public final Piece[][] pieces;
-
+    /**
+     * 红方 boss 位置
+     */
     private Place redBoss;
+    /**
+     * 黑方 boss 位置
+     */
     private Place blackBoss;
+    /**
+     * 红方棋子数量
+     */
     private int redPieceNum;
+    /**
+     * 黑方棋子数量
+     */
     private int blackPieceNum;
-
+    /**
+     * 红方棋子存在总分值(不计算Boss的分值)
+     */
+    private int redPieceExistScore;
+    /**
+     * 黑方棋子存在总分值(不计算Boss的分值)
+     */
+    private int blackPieceExistScore;
+    /**
+     * 双方形势分值总和(红方为正,黑方为负)
+     */
     private int pieceScore;
 
     public AnalysisBean(@NonNull final Piece[][] rawPieceArrays) {
         this.pieces = rawPieceArrays;
+        redPieceExistScore = 0;
+        blackPieceExistScore = 0;
         redPieceNum = 0;
         blackPieceNum = 0;
         // 找出boss, 和两方棋子数量
@@ -44,11 +67,15 @@ public class AnalysisBean {
                         redPieceNum++;
                         if (piece.role == Role.BOSS) {
                             redBoss = Place.of(x, y);
+                        } else {
+                            redPieceExistScore += piece.pieceScore.existScore;
                         }
                     } else {
                         blackPieceNum++;
                         if (piece.role == Role.BOSS) {
                             blackBoss = Place.of(x, y);
+                        } else {
+                            blackPieceExistScore += piece.pieceScore.existScore;
                         }
                     }
                 }
@@ -141,20 +168,42 @@ public class AnalysisBean {
         if (eatenPiece != null) {
             // 若是将棋, 则更新BOSS子的位置
             // 若被吃的棋子是红方, 则 - 被吃掉的棋子的存在值, 若是黑方则相反.
+            final PieceScore pScore = eatenPiece.pieceScore;
+            final int existScore = pScore.existScore;
+            final int pieceCount = redPieceNum + blackPieceNum;
             if (eatenPiece.part == Part.RED) {
-                invScr -= eatenPiece.pieceScore.existScore;
-                invScr -= eatenPiece.pieceScore.getPlaceScore(Part.RED, to.x, to.y);
+                redPieceExistScore -= existScore;
                 redPieceNum--;
+                invScr -= existScore;
+                invScr -= pScore.getPlaceScore(Part.RED, to.x, to.y);
+                /*
+                 * 加成分数: 棋子存在值 * (当前方棋子存在总分值 / 双方棋子存在总分值) * 0.5
+                 * 1. 与别人换子是不利的, AI 下子尽量保守些.
+                 * 2. 相对来讲, 如果自己的棋子子力和比较多, 那么换子是有利的, 如果自己的棋子子力和比较少, 那么换子是不利的.
+                 * eg: 假如 red: 2000, black: 3000, 场上12个棋子, 此时 此时红方 kill 黑方 200, 此时可以获得 200 * 0.25 * 2000 / ( 2000 + 3000 ) = 20 分
+                 * 之后 red: 2000, black: 2800, 场上11个棋子, 此时黑方再 kill 红方 200, 此时 200 * 0.25 * 2800 / ( 2000 + 2800 ) = 29 分
+                 */
+                invScr -= (existScore * redPieceExistScore / (redPieceExistScore + blackPieceExistScore)) >> 3;
+                // 2. 如果损失的是馬(后期马越来越重要), 前期马有负分数加成, 后期马有正分数加成
+                if (eatenPiece.role == Role.HORSE) {
+                    invScr -= (16 - pieceCount) << 1;
+                }
             } else {
-                invScr += eatenPiece.pieceScore.existScore;
-                invScr += eatenPiece.pieceScore.getPlaceScore(Part.BLACK, to.x, to.y);
+                blackPieceExistScore -= existScore;
                 blackPieceNum--;
+                invScr += existScore;
+                invScr += pScore.getPlaceScore(Part.BLACK, to.x, to.y);
+                /* 该部分原理同上 */
+                invScr += (existScore * redPieceExistScore / (redPieceExistScore + blackPieceExistScore)) >> 3;
+                if (eatenPiece.role == Role.HORSE) {
+                    invScr += (16 - pieceCount) << 1;
+                }
             }
             // 更新分数
         }
         pieceScore += invScr;
-        // debug
-        DebugInfo.checkScoreDynamicCalc(pieces, pieceScore);
+        // 测试, 去掉上面的加成分数, 则下面的检查成立
+//        DebugInfo.checkScoreDynamicCalc(pieces, pieceScore);
         DebugInfo.incrementAlphaBetaTime();
         return invScr;
     }
@@ -172,8 +221,10 @@ public class AnalysisBean {
         }
         if (eatenPiece != null) {
             if (eatenPiece.part == Part.RED) {
+                redPieceExistScore += eatenPiece.pieceScore.existScore;
                 redPieceNum++;
             } else {
+                blackPieceExistScore += eatenPiece.pieceScore.existScore;
                 blackPieceNum++;
             }
         }
@@ -299,6 +350,9 @@ public class AnalysisBean {
 
     public boolean simulateOneStep(StepBean stepBean, Predicate<AnalysisBean> predicate) {
         final Piece eatenPiece = getPiece(stepBean.to);
+        if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
+            throw new IllegalStateException(eatenPiece.name() + " 被吃掉了, 无法继续执行下去");
+        }
         // 模拟走棋
         final int invScr = goForward(stepBean.from, stepBean.to, eatenPiece);
         // 评分
@@ -317,6 +371,16 @@ public class AnalysisBean {
         final Set<StepBean> nextStepAgainEvalPlace = AlphaBeta.getEvaluatedPlace(pieces, part, 2, null);
         // 计算后的步骤中, 是否存在能吃掉 BOSS 的一步
         for (StepBean stepBean : nextStepAgainEvalPlace) {
+            final Piece eatenPiece = getPiece(stepBean.to);
+            // 如果是 BOSS角色被吃掉, 则需要跳出循环或继续下一步循环
+            if (eatenPiece != null && eatenPiece.role == Role.BOSS) {
+                // 如果吃掉的是对方的 BOSS, 表示可以避免本方 BOSS 被吃掉
+                if (eatenPiece.part == part) {
+                    continue;
+                } else {
+                    return true;
+                }
+            }
             // 如果 stepBean 走完之后, 对方无法吃掉自己的 BOSS, 则返回true
             if (!simulateOneStep(stepBean, bean -> bean.canEatBossAfterOneAiStep(Part.getOpposite(part)))) {
                 return true;
